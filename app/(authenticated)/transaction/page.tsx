@@ -3,10 +3,11 @@
 /**
  * Transaction — input form + list transaksi terkini.
  *
- * Tabs:
- *   - Tab "Masuk" → form input barang masuk
- *   - Tab "Keluar" → form input barang keluar
- *   - Tab "List" → tabel 50 transaksi terakhir
+ * Phase 6 updates:
+ *   - UI-1: Cascading dropdown Atrione (material → ukuran → warna) via masterData.options
+ *   - UI-2: Datalist Lebar Canvas via masterData.options
+ *   - UI-6: Display tanggal pakai formatDateDmy (DD/MM/YYYY)
+ *   - UI-7: Input harga auto-format Indonesia (parseHargaID + formatHargaDisplay)
  */
 
 import { useEffect, useState, useCallback } from 'react';
@@ -14,8 +15,10 @@ import { Receipt, Plus, ArrowsClockwise, ArrowDown, ArrowUp, ListBullets } from 
 import { saveTransaction } from '@/lib/transaction';
 import { searchHistory, type HistoryItem } from '@/lib/history';
 import { listBus, getBuFlags, type BUConfig } from '@/lib/bu-registry';
+import { getMasterDataOptions } from '@/lib/master-data';
 import { RadialLoading } from '@/lib/RadialLoading';
 import { toast, alertError, withLoading } from '@/lib/swal';
+import { formatDateDmy, parseHargaID, formatHargaDisplay } from '@/lib/utils';
 
 type Tab = 'masuk' | 'keluar' | 'list';
 
@@ -26,6 +29,15 @@ export default function TransactionPage() {
   const [recent, setRecent] = useState<HistoryItem[]>([]);
   const [loadingList, setLoadingList] = useState(false);
 
+  // === UI-1 + UI-2: Cascading options state ===
+  const [materialOptions, setMaterialOptions] = useState<string[]>([]);
+  const [ukuranOptions, setUkuranOptions] = useState<string[]>([]);
+  const [warnaOptions, setWarnaOptions] = useState<string[]>([]);
+  const [lebarOptions, setLebarOptions] = useState<string[]>([]);
+  const [optionsLoading, setOptionsLoading] = useState({ material: false, ukuran: false, warna: false, lebar: false });
+  // Cache: skip refetch kalau parent value sama
+  const [optionsCache, setOptionsCache] = useState<Record<string, string[]>>({});
+
   const [form, setForm] = useState({
     tanggal: new Date().toISOString().slice(0, 10),
     nama: '',
@@ -34,7 +46,9 @@ export default function TransactionPage() {
     lebar: '',
     uom: '',
     qty: '',
-    harga: '',
+    hargaDisplay: '',
+    harga: '',   // actual number value
+    hppDisplay: '',
     hpp: '',
     diskon: '',
     customer: '',
@@ -52,19 +66,98 @@ export default function TransactionPage() {
     return () => window.removeEventListener('bu-changed', handler);
   }, []);
 
-  // Load BU config
+  // Load BU config + initial options
   useEffect(() => {
     if (!bu) return;
     listBus()
-      .then((bus) => {
+      .then(async (bus) => {
         const found = bus.find((b) => b.bu_name === bu);
         if (found) {
           setBuConfig(found);
           setForm((f) => ({ ...f, uom: found.default_uom || '' }));
+
+          // Preload master data options
+          // Atrione cascading: material list
+          if (found.bu_id === 'atrione') {
+            setOptionsLoading((o) => ({ ...o, material: true }));
+            try {
+              const result = await getMasterDataOptions({ bu: found.bu_name, child_field: 'Nama' });
+              setMaterialOptions(result.values);
+            } catch { /* ignore */ }
+            setOptionsLoading((o) => ({ ...o, material: false }));
+          }
+          // Canvas datalist: lebar
+          if (found.bu_id === 'canvas' && found.has_width) {
+            setOptionsLoading((o) => ({ ...o, lebar: true }));
+            try {
+              const result = await getMasterDataOptions({ bu: found.bu_name, child_field: 'Lebar' });
+              setLebarOptions(result.values);
+            } catch { /* ignore */ }
+            setOptionsLoading((o) => ({ ...o, lebar: false }));
+          }
         }
       })
       .catch((err) => alertError(err));
   }, [bu]);
+
+  // === UI-1: Cascading Atrione ===
+  // Material berubah → fetch ukuran
+  useEffect(() => {
+    if (!buConfig || buConfig.bu_id !== 'atrione' || !form.nama) {
+      setUkuranOptions([]);
+      setWarnaOptions([]);
+      setForm((f) => ({ ...f, ukuran: '', warna: '' }));
+      return;
+    }
+    const cacheKey = `ukuran:${form.nama}`;
+    if (optionsCache[cacheKey]) {
+      setUkuranOptions(optionsCache[cacheKey]);
+      return;
+    }
+    setOptionsLoading((o) => ({ ...o, ukuran: true }));
+    getMasterDataOptions({
+      bu: buConfig.bu_name,
+      parent_field: 'Nama',
+      parent_value: form.nama,
+      child_field: 'Ukuran',
+    })
+      .then((res) => {
+        setUkuranOptions(res.values);
+        setOptionsCache((c) => ({ ...c, [cacheKey]: res.values }));
+      })
+      .catch(() => setUkuranOptions([]))
+      .finally(() => setOptionsLoading((o) => ({ ...o, ukuran: false })));
+  }, [form.nama, buConfig]);
+
+  // Ukuran berubah → fetch warna
+  useEffect(() => {
+    if (!buConfig || buConfig.bu_id !== 'atrione' || !form.ukuran) {
+      setWarnaOptions([]);
+      setForm((f) => ({ ...f, warna: '' }));
+      return;
+    }
+    const cacheKey = `warna:${form.nama}:${form.ukuran}`;
+    if (optionsCache[cacheKey]) {
+      setWarnaOptions(optionsCache[cacheKey]);
+      return;
+    }
+    setOptionsLoading((o) => ({ ...o, warna: true }));
+    getMasterDataOptions({
+      bu: buConfig.bu_name,
+      parent_field: 'Ukuran',
+      parent_value: form.ukuran,
+      child_field: 'Warna',
+    })
+      .then((res) => {
+        setWarnaOptions(res.values);
+        setOptionsCache((c) => ({ ...c, [cacheKey]: res.values }));
+      })
+      .catch(() => setWarnaOptions([]))
+      .finally(() => setOptionsLoading((o) => ({ ...o, warna: false })));
+  }, [form.ukuran, buConfig]);
+
+  // === UI-2: Preload datalist Canvas lebar ===
+  // (sudah di-fetch di useEffect BU config di atas)
 
   // Load recent transactions
   const loadRecent = useCallback(async () => {
@@ -118,8 +211,8 @@ export default function TransactionPage() {
           warna: form.warna || undefined,
           ukuran: form.ukuran || undefined,
           lebar: form.lebar || undefined,
-          harga: form.harga ? parseFloat(form.harga) : undefined,
-          hpp: form.hpp ? parseFloat(form.hpp) : undefined,
+          harga: form.harga ? parseFloat(form.harga) : (form.hargaDisplay ? parseHargaID(form.hargaDisplay) : undefined),
+          hpp: form.hpp ? parseFloat(form.hpp) : (form.hppDisplay ? parseHargaID(form.hppDisplay) : undefined),
           diskon: form.diskon ? parseFloat(form.diskon) : undefined,
           customer: form.customer || undefined,
           no_sj: form.no_sj || undefined,
@@ -128,7 +221,6 @@ export default function TransactionPage() {
         }),
       {
         loadingText: 'Menyimpan transaksi…',
-        // Custom success message berdasarkan source (live vs queued)
       },
     );
 
@@ -151,7 +243,9 @@ export default function TransactionPage() {
         uom: form.uom,
         qty: '',
         harga: '',
+        hargaDisplay: '',
         hpp: '',
+        hppDisplay: '',
         diskon: '',
         customer: '',
         no_sj: '',
@@ -161,6 +255,8 @@ export default function TransactionPage() {
   }
 
   const flags = buConfig ? getBuFlags(buConfig) : null;
+  const isAtrione = buConfig?.bu_id === 'atrione';
+  const isCanvas = buConfig?.bu_id === 'canvas';
 
   return (
     <div>
@@ -226,7 +322,7 @@ export default function TransactionPage() {
                 <tbody>
                   {recent.map((tx, i) => (
                     <tr key={i}>
-                      <td>{formatDate(tx.Tanggal as string)}</td>
+                      <td>{formatDateDmy(tx.Tanggal as string)}</td>
                       <td>{(tx['Nama Material'] || tx['Nama Barang'] || '-') as string}</td>
                       <td className="text-sm text-muted">
                         {[tx['Warna'], tx['Ukuran'], tx['Lebar']].filter(Boolean).join(' / ') || '-'}
@@ -260,41 +356,99 @@ export default function TransactionPage() {
               />
             </div>
 
+            {/* === UI-1: Cascading Atrione — Material dropdown === */}
             <div className="form-group">
               <label>Nama Barang</label>
-              <input
-                type="text"
-                className="form-control"
-                value={form.nama}
-                onChange={(e) => setForm({ ...form, nama: e.target.value })}
-                required
-              />
-            </div>
-
-            {flags?.has_color && (
-              <div className="form-group">
-                <label>Warna</label>
+              {isAtrione && materialOptions.length > 0 ? (
+                optionsLoading.material ? (
+                  <div className="form-control flex items-center"><RadialLoading size={16} /></div>
+                ) : (
+                  <select
+                    className="form-control"
+                    value={form.nama}
+                    onChange={(e) => setForm({ ...form, nama: e.target.value })}
+                    required
+                  >
+                    <option value="">-- Pilih Produk --</option>
+                    {materialOptions.map((m) => (
+                      <option key={m} value={m}>{m}</option>
+                    ))}
+                  </select>
+                )
+              ) : (
                 <input
                   type="text"
                   className="form-control"
-                  value={form.warna}
-                  onChange={(e) => setForm({ ...form, warna: e.target.value })}
+                  value={form.nama}
+                  onChange={(e) => setForm({ ...form, nama: e.target.value })}
+                  list={isAtrione ? 'material-suggestions' : undefined}
+                  required
                 />
-              </div>
-            )}
+              )}
+              {isAtrione && materialOptions.length > 0 && (
+                <datalist id="material-suggestions">
+                  {materialOptions.map((m) => <option key={m} value={m} />)}
+                </datalist>
+              )}
+            </div>
 
+            {/* === UI-1: Cascading Atrione — Ukuran dropdown === */}
             {flags?.has_size && (
               <div className="form-group">
                 <label>Ukuran</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  value={form.ukuran}
-                  onChange={(e) => setForm({ ...form, ukuran: e.target.value })}
-                />
+                {isAtrione && ukuranOptions.length > 0 ? (
+                  <select
+                    className="form-control"
+                    value={form.ukuran}
+                    onChange={(e) => setForm({ ...form, ukuran: e.target.value })}
+                  >
+                    <option value="">-- Pilih Ukuran --</option>
+                    {ukuranOptions.map((u) => (
+                      <option key={u} value={u}>{u}</option>
+                    ))}
+                  </select>
+                ) : optionsLoading.ukuran ? (
+                  <div className="form-control flex items-center"><RadialLoading size={16} /></div>
+                ) : (
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={form.ukuran}
+                    onChange={(e) => setForm({ ...form, ukuran: e.target.value })}
+                  />
+                )}
               </div>
             )}
 
+            {/* === UI-1: Cascading Atrione — Warna dropdown === */}
+            {flags?.has_color && (
+              <div className="form-group">
+                <label>Warna</label>
+                {isAtrione && warnaOptions.length > 0 ? (
+                  <select
+                    className="form-control"
+                    value={form.warna}
+                    onChange={(e) => setForm({ ...form, warna: e.target.value })}
+                  >
+                    <option value="">-- Pilih Warna --</option>
+                    {warnaOptions.map((w) => (
+                      <option key={w} value={w}>{w}</option>
+                    ))}
+                  </select>
+                ) : optionsLoading.warna ? (
+                  <div className="form-control flex items-center"><RadialLoading size={16} /></div>
+                ) : (
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={form.warna}
+                    onChange={(e) => setForm({ ...form, warna: e.target.value })}
+                  />
+                )}
+              </div>
+            )}
+
+            {/* === UI-2: Datalist Lebar Canvas === */}
             {flags?.has_width && (
               <div className="form-group">
                 <label>Lebar</label>
@@ -303,7 +457,14 @@ export default function TransactionPage() {
                   className="form-control"
                   value={form.lebar}
                   onChange={(e) => setForm({ ...form, lebar: e.target.value })}
+                  list={isCanvas && lebarOptions.length > 0 ? 'lebar-options' : undefined}
+                  placeholder={isCanvas ? 'Cari lebar...' : undefined}
                 />
+                {isCanvas && lebarOptions.length > 0 && (
+                  <datalist id="lebar-options">
+                    {lebarOptions.map((v) => <option key={v} value={v} />)}
+                  </datalist>
+                )}
               </div>
             )}
 
@@ -331,27 +492,46 @@ export default function TransactionPage() {
               />
             </div>
 
+            {/* === UI-7: Input Harga auto-format Indonesia === */}
             {activeTab === 'keluar' && (
               <div className="form-group">
                 <label>Harga Jual</label>
-                <input
-                  type="number"
-                  className="form-control"
-                  value={form.harga}
-                  onChange={(e) => setForm({ ...form, harga: e.target.value })}
-                />
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted text-sm">Rp</span>
+                  <input
+                    type="text"
+                    className="form-control"
+                    style={{ paddingLeft: '2.5rem' }}
+                    value={form.hargaDisplay}
+                    onChange={(e) => setForm({ ...form, hargaDisplay: e.target.value })}
+                    onBlur={() => {
+                      const num = parseHargaID(form.hargaDisplay);
+                      setForm({ ...form, harga: String(num), hargaDisplay: formatHargaDisplay(num) });
+                    }}
+                    placeholder="0"
+                  />
+                </div>
               </div>
             )}
 
             {flags?.has_hpp && activeTab === 'keluar' && (
               <div className="form-group">
                 <label>HPP</label>
-                <input
-                  type="number"
-                  className="form-control"
-                  value={form.hpp}
-                  onChange={(e) => setForm({ ...form, hpp: e.target.value })}
-                />
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted text-sm">Rp</span>
+                  <input
+                    type="text"
+                    className="form-control"
+                    style={{ paddingLeft: '2.5rem' }}
+                    value={form.hppDisplay}
+                    onChange={(e) => setForm({ ...form, hppDisplay: e.target.value })}
+                    onBlur={() => {
+                      const num = parseHargaID(form.hppDisplay);
+                      setForm({ ...form, hpp: String(num), hppDisplay: formatHargaDisplay(num) });
+                    }}
+                    placeholder="0"
+                  />
+                </div>
               </div>
             )}
 
@@ -408,12 +588,4 @@ export default function TransactionPage() {
       )}
     </div>
   );
-}
-
-function formatDate(iso: string): string {
-  if (!iso) return '-';
-  const d = new Date(iso);
-  return isNaN(d.getTime())
-    ? iso
-    : d.toLocaleString('id-ID', { day: '2-digit', month: 'short', year: '2-digit' });
 }

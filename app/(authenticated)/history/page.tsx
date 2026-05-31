@@ -34,7 +34,7 @@ import {
 import { generateSuratJalanPdf } from '@/lib/reports';
 import { RadialLoading } from '@/lib/RadialLoading';
 import { alertError, toast, withLoading } from '@/lib/swal';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, formatDateDmy } from '@/lib/utils';
 
 const TIPE_OPTIONS: { value: HistoryTipe; label: string }[] = [
   { value: 'all',    label: 'Semua' },
@@ -369,7 +369,7 @@ export default function HistoryPage() {
                   const isOutbound = (Number(tx['Keluar']) || 0) > 0;
                   return (
                     <tr key={i}>
-                      <td>{formatDate(tx['Tanggal'] as string)}</td>
+                      <td>{formatDateDmy(tx['Tanggal'] as string)}</td>
                       <td className="font-semibold">
                         {(tx['Nama Material'] || tx['Nama Barang'] || '-') as string}
                       </td>
@@ -540,10 +540,3 @@ export default function HistoryPage() {
   );
 }
 
-function formatDate(iso: string): string {
-  if (!iso) return '-';
-  const d = new Date(iso);
-  return isNaN(d.getTime())
-    ? iso
-    : d.toLocaleString('id-ID', { day: '2-digit', month: 'short', year: '2-digit' });
-}

@@ -51,6 +51,7 @@ export type AppsScriptAction =
   | 'masterData.list'
   | 'masterData.save'
   | 'masterData.delete'
+  | 'masterData.options'
   // Dashboard, History, Reports (Phase 4)
   | 'dashboard.live'
   | 'history.search'

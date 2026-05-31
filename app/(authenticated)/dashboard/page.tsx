@@ -21,7 +21,7 @@ import {
 import { getDashboardLive, type DashboardData } from '@/lib/dashboard';
 import { RadialLoading } from '@/lib/RadialLoading';
 import { alertError } from '@/lib/swal';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, formatDateDmy } from '@/lib/utils';
 import { DashboardCharts } from '@/components/DashboardCharts';
 
 export default function DashboardPage() {
@@ -236,7 +236,7 @@ export default function DashboardPage() {
             <tbody>
               {data.recent_transactions.slice(0, 15).map((tx, i) => (
                 <tr key={i}>
-                  <td>{formatTanggal(tx.Tanggal as string)}</td>
+                  <td>{formatDateDmy(tx.Tanggal as string)}</td>
                   <td>{tx.bu}</td>
                   <td>{(tx['Nama Material'] || tx['Nama Barang'] || '-') as string}</td>
                   <td className="text-right text-success">{(tx['Masuk'] as number) || ''}</td>
@@ -292,14 +292,4 @@ function StatBox({
   );
 }
 
-function formatTanggal(iso: string): string {
-  if (!iso) return '-';
-  const d = new Date(iso);
-  if (isNaN(d.getTime())) return iso;
-  return d.toLocaleString('id-ID', {
-    day: '2-digit',
-    month: 'short',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-}
+

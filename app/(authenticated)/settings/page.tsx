@@ -323,6 +323,11 @@ export default function SettingsPage() {
       },
     );
     if (result) {
+      // UI-5: Tampilkan warnings dari backend (diskon/HPP untuk non-product BU)
+      const saved = result as BUConfig & { _warnings?: string[] };
+      if (saved._warnings?.length) {
+        saved._warnings.forEach((w) => toast(w, 'warning'));
+      }
       setShowForm(false);
       loadBus();
     }

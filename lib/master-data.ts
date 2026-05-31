@@ -70,6 +70,23 @@ export interface MasterDataDeleteResult {
 }
 
 // ============================================================================
+// TASK-2 + TASK-3 (Phase 6): masterData.options — unique values
+// ============================================================================
+
+export interface MasterDataOptionsPayload {
+  bu: string;
+  parent_field?: string | null;
+  parent_value?: string | null;
+  child_field: string;
+}
+
+export interface MasterDataOptionsResult {
+  values: string[];
+  source: string;
+  total_unique: number;
+}
+
+// ============================================================================
 // Functions
 // ============================================================================
 
@@ -126,4 +143,27 @@ export async function deleteMasterData(
     MasterDataDeleteResult,
     { bu: string; id: string; _actor_role: string; _actor_email: string }
   >('masterData.delete', { bu: buName, id, ...actor }, { user: actor._actor_email });
+}
+
+/**
+ * Get unique values dari field spesifik di MD sheet (cascading dropdown + datalist).
+ * TASK-2 + TASK-3 (Phase 6).
+ *
+ * @example
+ *   // Cascading Atrione: semua Ukuran
+ *   const sizes = await getMasterDataOptions({ bu: 'Atrione', child_field: 'Ukuran' });
+ *   // Cascading Atrione: Ukuran untuk material tertentu
+ *   const sizes = await getMasterDataOptions({ bu: 'Atrione', parent_field: 'Nama', parent_value: 'Sepatu A31', child_field: 'Ukuran' });
+ *   // Datalist Canvas: semua Lebar
+ *   const widths = await getMasterDataOptions({ bu: 'Canvas', child_field: 'Lebar' });
+ */
+export async function getMasterDataOptions(
+  payload: MasterDataOptionsPayload,
+): Promise<MasterDataOptionsResult> {
+  if (!payload.bu) throw new Error('bu wajib');
+  if (!payload.child_field) throw new Error('child_field wajib');
+  return callAppsScript<MasterDataOptionsResult, MasterDataOptionsPayload>(
+    'masterData.options',
+    payload,
+  );
 }

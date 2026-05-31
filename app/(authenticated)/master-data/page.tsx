@@ -28,15 +28,11 @@ import {
 import { listBus, getBuFlags, type BUConfig } from '@/lib/bu-registry';
 import { RadialLoading } from '@/lib/RadialLoading';
 import { confirm, toast, alertError, withLoading } from '@/lib/swal';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, formatDateDmy, parseHargaID, formatHargaDisplay } from '@/lib/utils';
 
 // Helper format tanggal (dipakai di grouping batch)
 function formatDate(iso: string): string {
-  if (!iso) return '-';
-  const d = new Date(iso);
-  return isNaN(d.getTime())
-    ? iso
-    : d.toLocaleString('id-ID', { day: '2-digit', month: 'short', year: '2-digit' });
+  return formatDateDmy(iso);
 }
 
 type MdRow = Record<string, unknown> & { ID?: string };

@@ -51,3 +51,81 @@ export function sanitizeText(input: string): string {
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#x27;');
 }
+
+// ============================================================================
+// TASK-6 (Phase 6): Format Tanggal DD/MM/YYYY (WMS Indonesian display)
+// ============================================================================
+
+/** Format ISO date → DD/MM/YYYY (Indonesian). WMS lama format canonical. */
+export function formatDateDmy(isoOrDate: string | Date): string {
+  const d = typeof isoOrDate === 'string' ? new Date(isoOrDate) : isoOrDate;
+  if (isNaN(d.getTime())) return String(isoOrDate);
+  const day = String(d.getDate()).padStart(2, '0');
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  return `${day}/${month}/${d.getFullYear()}`;
+}
+
+// ============================================================================
+// TASK-7 (Phase 6): Parse Harga Indonesia (titik thousand + koma decimal)
+// ============================================================================
+
+/**
+ * Parse harga format Indonesia.
+ *
+ * Examples:
+ *   '1.000.000,00'   → 1000000
+ *   '1,000,000.00'   → 1000000 (US format, koma ribuan + titik desimal)
+ *   '1000000'        → 1000000
+ *   'Rp 50.000,00'   → 50000
+ *   '50.000,50'      → 50000.5
+ *   ''               → 0
+ */
+export function parseHargaID(input: string): number {
+  if (!input || typeof input !== 'string') return 0;
+  let s = input.trim();
+
+  // Strip prefix 'Rp' atau 'rp'
+  s = s.replace(/^rp\s*/i, '');
+
+  // Detect format: kalau ada 2 separators, pisahkan ribuan dan desimal
+  // Format ID: 1.000.000,00 → titik = ribuan, koma = desimal
+  // Format US: 1,000,000.00 → koma = ribuan, titik = desimal
+  const hasComma = s.includes(',');
+  const hasDot = s.includes('.');
+
+  if (hasComma && hasDot) {
+    // Cek mana separator terakhir → itu desimal
+    const lastComma = s.lastIndexOf(',');
+    const lastDot = s.lastIndexOf('.');
+    if (lastComma > lastDot) {
+      // ID format: titik = thousand, koma = decimal
+      s = s.replace(/\./g, '').replace(',', '.');
+    } else {
+      // US format: koma = thousand, titik = decimal
+      s = s.replace(/,/g, '');
+    }
+  } else if (hasComma && !hasDot) {
+    // Hanya koma — cek apakah koma desimal (2 digit setelah) atau ribuan
+    const afterComma = s.split(',').pop() || '';
+    if (afterComma.length <= 2) {
+      // Desimal: "50,50" atau "1500,00"
+      s = s.replace(',', '.');
+    } else {
+      // Ribuan: "15000" atau "1,500" -> hapus koma
+      s = s.replace(/,/g, '');
+    }
+  }
+  // hasDot only — "50.50" atau "1.500.00" → parse langsung
+
+  const n = parseFloat(s);
+  return isNaN(n) ? 0 : n;
+}
+
+/**
+ * Auto-format number ke display IDR (1.000.000) tanpa desimal.
+ * Dipakai di onBlur input harga.
+ */
+export function formatHargaDisplay(value: number | string): string {
+  const n = typeof value === 'string' ? parseHargaID(value) : value;
+  return new Intl.NumberFormat('id-ID').format(n);
+}
