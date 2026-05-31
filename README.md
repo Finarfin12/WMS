@@ -1,6 +1,6 @@
 # WMS Gudang — Frontend (Vercel)
 
-Warehouse Management System untuk multi business unit (Atrione footwear, Canvas printing, Chemical lab supply, dst). Frontend Next.js 15 + Tailwind, deploy ke Vercel. Backend di Apps Script terpisah (lihat repo `wms-gudang-appscript`).
+Warehouse Management System untuk multi business unit. Frontend Next.js 15 + Tailwind, deploy ke Vercel. Backend di Apps Script terpisah (lihat repo `wms-gudang-appscript`).
 
 > **Status:** Phase 1-5c complete (49 fitur, 60/60 unit tests pass, tsc 0 error). Siap deploy ke production setelah setup env (~30 menit).
 
@@ -98,6 +98,6 @@ Proprietary — internal use only.
 
 ## Author
 
-Ii Hidayat ([@Finarfin12](https://github.com/Finarfin12))
+([@Finarfin12](https://github.com/Finarfin12))
 
-Built dengan partnership Hiraeth (AI co-developer).
+Built dengan partnership Hiraeth.
