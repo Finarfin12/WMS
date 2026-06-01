@@ -9,7 +9,7 @@
  *   - /api/system/health   (health check publik)
  *   - /api/cron/*          (cron/background jobs)
  *
- * SESSION_SECRET wajib di-set di Vercel env vars, sama persis dengan
+ * JWT_SECRET wajib di-set di Vercel env vars, sama persis dengan
  * Apps Script Script Properties.
  */
 
@@ -50,9 +50,9 @@ export async function proxy(req: NextRequest) {
     return NextResponse.next();
   }
 
-  const secret = process.env.SESSION_SECRET;
+  const secret = process.env.JWT_SECRET;
   if (!secret) {
-    console.error('[proxy] SESSION_SECRET tidak set');
+    console.error('[proxy] JWT_SECRET tidak set');
     return NextResponse.redirect(new URL('/login?reason=config', req.url));
   }
 
