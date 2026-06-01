@@ -50,9 +50,9 @@ export async function proxy(req: NextRequest) {
     return NextResponse.next();
   }
 
-  const secret = process.env.JWT_SECRET;
+  const secret = process.env.JWT_SECRET || process.env.SESSION_SECRET;
   if (!secret) {
-    console.error('[proxy] JWT_SECRET tidak set');
+    console.error('[proxy] JWT_SECRET / SESSION_SECRET tidak set');
     return NextResponse.redirect(new URL('/login?reason=config', req.url));
   }
 

@@ -8,7 +8,7 @@
  * Pakai SweetAlert untuk error/success notif, RadialLoading untuk button state.
  */
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Envelope, LockKey, ArrowRight, ArrowCounterClockwise } from '@phosphor-icons/react';
 import { checkDomain, requestOtp, verifyOtp } from '@/lib/auth';
@@ -23,7 +23,27 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
   const [loading, setLoading] = useState(false);
+  const [loadingText, setLoadingText] = useState('');
   const [resendCountdown, setResendCountdown] = useState(0);
+
+  useEffect(() => {
+    const reason = new URLSearchParams(window.location.search).get('reason');
+    if (reason === 'expired') {
+      localStorage.removeItem('wms_user');
+      alertError(
+        new Error(
+          'Sesi login ditolak. Kalau baru memasukkan OTP, pastikan JWT_SECRET di Vercel sama persis dengan SESSION_SECRET di Apps Script.',
+        ),
+        'Login belum berhasil',
+      );
+    }
+    if (reason === 'config') {
+      alertError(
+        new Error('Konfigurasi session di Vercel belum lengkap. Isi JWT_SECRET atau SESSION_SECRET.'),
+        'Konfigurasi belum lengkap',
+      );
+    }
+  }, []);
 
   async function handleEmailSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -33,6 +53,7 @@ export default function LoginPage() {
     }
 
     setLoading(true);
+    setLoadingText('Mengirim OTP...');
     try {
       const domainCheck = await checkDomain(email);
       if (!domainCheck.allowed) {
@@ -52,6 +73,7 @@ export default function LoginPage() {
       alertError(err);
     } finally {
       setLoading(false);
+      setLoadingText('');
     }
   }
 
@@ -63,8 +85,10 @@ export default function LoginPage() {
     }
 
     setLoading(true);
+    setLoadingText('Memverifikasi OTP...');
     try {
       const result = await verifyOtp(email, otp);
+      setLoadingText('Masuk ke dashboard...');
       // Cookie session httpOnly diset oleh /api/auth/verify-otp.
       const role = result.role || result.user.role || 'User';
       const username = result.username || result.user.username || email.split('@')[0];
@@ -73,17 +97,19 @@ export default function LoginPage() {
         JSON.stringify({ email, role, username }),
       );
       toast(`Selamat datang, ${username}`, 'success');
-      router.push('/dashboard');
+      router.replace('/dashboard');
+      router.refresh();
     } catch (err) {
       alertError(err, 'OTP tidak valid');
       setOtp('');
-    } finally {
       setLoading(false);
+      setLoadingText('');
     }
   }
 
   async function handleResend() {
     setLoading(true);
+    setLoadingText('Mengirim ulang OTP...');
     try {
       await requestOtp(email);
       toast('OTP baru dikirim', 'success');
@@ -92,6 +118,7 @@ export default function LoginPage() {
       alertError(err);
     } finally {
       setLoading(false);
+      setLoadingText('');
     }
   }
 
@@ -144,7 +171,10 @@ export default function LoginPage() {
             </div>
             <button type="submit" className="btn btn-primary w-full" disabled={loading}>
               {loading ? (
-                <RadialLoading size={20} />
+                <span className="inline-flex items-center justify-center gap-2">
+                  <RadialLoading size={20} />
+                  {loadingText}
+                </span>
               ) : (
                 <>
                   Lanjut <ArrowRight size={18} weight="bold" />
@@ -186,7 +216,14 @@ export default function LoginPage() {
               </p>
             </div>
             <button type="submit" className="btn btn-primary w-full mb-3" disabled={loading || otp.length !== 6}>
-              {loading ? <RadialLoading size={20} /> : 'Verifikasi'}
+              {loading ? (
+                <span className="inline-flex items-center justify-center gap-2">
+                  <RadialLoading size={20} />
+                  {loadingText || 'Memproses...'}
+                </span>
+              ) : (
+                'Verifikasi'
+              )}
             </button>
 
             <div className="flex justify-between items-center text-sm">

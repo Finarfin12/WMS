@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { jwtVerify } from 'jose';
 import {
   AppsScriptError,
   callAppsScript,
@@ -7,6 +8,10 @@ import {
 import type { ApiResponse } from '@/types/api';
 
 export const SESSION_COOKIE_NAME = 'wms_session';
+
+export function getJwtSecret(): string | undefined {
+  return process.env.JWT_SECRET || process.env.SESSION_SECRET;
+}
 
 export function errorResponse(
   message: string,
@@ -46,5 +51,19 @@ export function parseJwtExp(token: string): Date | undefined {
     return decoded.exp ? new Date(decoded.exp * 1000) : undefined;
   } catch {
     return undefined;
+  }
+}
+
+export async function verifySessionJwt(token: string): Promise<boolean> {
+  const secret = getJwtSecret();
+  if (!secret) return false;
+
+  try {
+    await jwtVerify(token, new TextEncoder().encode(secret), {
+      algorithms: ['HS256'],
+    });
+    return true;
+  } catch {
+    return false;
   }
 }

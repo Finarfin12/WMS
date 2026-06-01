@@ -4,6 +4,7 @@ import {
   callAuthAction,
   errorResponse,
   parseJwtExp,
+  verifySessionJwt,
 } from '../_helpers';
 import type { ApiResponse } from '@/types/api';
 import type { VerifyOtpResult } from '@/lib/auth';
@@ -32,6 +33,15 @@ export async function POST(
   });
 
   if (data instanceof NextResponse) return data;
+
+  const jwtValid = await verifySessionJwt(data.token);
+  if (!jwtValid) {
+    return errorResponse(
+      'OTP benar, tapi token login ditolak Vercel. Pastikan JWT_SECRET di Vercel sama persis dengan SESSION_SECRET di Apps Script.',
+      'SESSION_SECRET_MISMATCH',
+      500,
+    );
+  }
 
   const response = NextResponse.json({ success: true, data });
   response.cookies.set({
