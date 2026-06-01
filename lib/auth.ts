@@ -10,7 +10,7 @@
  * Logout: logout(token) → invalidate.
  */
 
-import { callAppsScript } from './apps-script-client';
+import type { ApiResponse } from '@/types/api';
 
 // ============================================================================
 // Types
@@ -46,6 +46,24 @@ export interface RequestOtpResult {
 // Functions
 // ============================================================================
 
+async function postAuth<TData>(
+  path: string,
+  payload?: unknown,
+): Promise<TData> {
+  const res = await fetch(path, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload ?? {}),
+  });
+
+  const json = (await res.json().catch(() => null)) as ApiResponse<TData> | null;
+  if (!res.ok || !json?.success) {
+    throw new Error(json?.error?.message ?? `Auth API HTTP ${res.status}`);
+  }
+
+  return json.data as TData;
+}
+
 /**
  * Check apakah email domain di-allow login.
  *
@@ -55,10 +73,9 @@ export interface RequestOtpResult {
  */
 export async function checkDomain(email: string): Promise<CheckDomainResult> {
   if (!email) throw new Error('email wajib diisi');
-  return callAppsScript<CheckDomainResult, { email: string }>(
-    'auth.checkDomain',
-    { email: email.toLowerCase().trim() },
-  );
+  return postAuth<CheckDomainResult>('/api/auth/check-domain', {
+    email: email.toLowerCase().trim(),
+  });
 }
 
 /**
@@ -67,10 +84,9 @@ export async function checkDomain(email: string): Promise<CheckDomainResult> {
  */
 export async function requestOtp(email: string): Promise<RequestOtpResult> {
   if (!email) throw new Error('email wajib diisi');
-  return callAppsScript<RequestOtpResult, { email: string }>(
-    'auth.requestOtp',
-    { email: email.toLowerCase().trim() },
-  );
+  return postAuth<RequestOtpResult>('/api/auth/request-otp', {
+    email: email.toLowerCase().trim(),
+  });
 }
 
 /**
@@ -84,20 +100,18 @@ export async function verifyOtp(
 ): Promise<VerifyOtpResult> {
   if (!email) throw new Error('email wajib diisi');
   if (!otp) throw new Error('otp wajib diisi');
-  return callAppsScript<VerifyOtpResult, { email: string; otp: string }>(
-    'auth.verifyOtp',
-    { email: email.toLowerCase().trim(), otp: otp.trim() },
-  );
+  return postAuth<VerifyOtpResult>('/api/auth/verify-otp', {
+    email: email.toLowerCase().trim(),
+    otp: otp.trim(),
+  });
 }
 
 /**
  * Logout — invalidate token di backend (best-effort, JWT stateless).
  * Vercel side juga harus delete httpOnly cookie.
  */
-export async function logout(token: string): Promise<{ ok: true }> {
-  return callAppsScript<{ ok: true }, { token: string }>('auth.logout', {
-    token,
-  });
+export async function logout(): Promise<{ ok: true }> {
+  return postAuth<{ ok: true }>('/api/auth/logout');
 }
 
 // ============================================================================

@@ -65,10 +65,9 @@ export default function LoginPage() {
     setLoading(true);
     try {
       const result = await verifyOtp(email, otp);
-      // Simpan token ke localStorage (akan dibaca middleware via cookie)
+      // Cookie session httpOnly diset oleh /api/auth/verify-otp.
       const role = result.role || result.user.role || 'User';
       const username = result.username || result.user.username || email.split('@')[0];
-      document.cookie = `session_token=${result.token}; path=/; max-age=${24 * 60 * 60}; SameSite=Lax`;
       localStorage.setItem(
         'wms_user',
         JSON.stringify({ email, role, username }),

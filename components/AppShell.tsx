@@ -134,15 +134,10 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     if (!ok) return;
 
     try {
-      const token = document.cookie
-        .split(';')
-        .find((c) => c.trim().startsWith('session_token='))
-        ?.split('=')[1];
-      if (token) await logout(token);
+      await logout();
     } catch {
       // ignore — logout di server best effort
     }
-    document.cookie = 'session_token=; path=/; max-age=0';
     localStorage.removeItem('wms_user');
     localStorage.removeItem('wms_active_bu');
     router.push('/login');

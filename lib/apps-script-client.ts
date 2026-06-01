@@ -109,6 +109,7 @@ interface CallOptions {
 
 const DEFAULT_TIMEOUT_MS = 30_000;
 const DEFAULT_RETRIES = 1;
+const RPC_PROXY_PATH = '/api/rpc';
 
 function getConfig() {
   const url = process.env.APPS_SCRIPT_WEB_APP_URL;
@@ -130,6 +131,79 @@ function getConfig() {
   return { url, token };
 }
 
+async function callAppsScriptViaApi<TData = unknown, TPayload = unknown>(
+  action: AppsScriptAction,
+  payload?: TPayload,
+  options: CallOptions = {},
+): Promise<TData> {
+  const timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
+  const retries = options.retries ?? DEFAULT_RETRIES;
+  let lastError: unknown;
+
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+    try {
+      const res = await fetch(RPC_PROXY_PATH, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action, payload }),
+        signal: controller.signal,
+      });
+
+      clearTimeout(timer);
+      const json = (await res.json()) as {
+        success: boolean;
+        data?: TData;
+        error?: ApiError;
+      };
+
+      if (!res.ok || !json.success) {
+        const message =
+          json.error?.message ?? `Server RPC HTTP ${res.status}`;
+        const code = json.error?.code ?? 'RPC_ERROR';
+        const error = new AppsScriptError(message, code, res.status);
+
+        if (res.status >= 500 && attempt < retries) {
+          lastError = error;
+          continue;
+        }
+
+        throw error;
+      }
+
+      return json.data as TData;
+    } catch (err) {
+      clearTimeout(timer);
+
+      if (err instanceof Error && err.name === 'AbortError') {
+        lastError = new AppsScriptError(
+          `Server RPC timeout setelah ${timeoutMs}ms`,
+          'TIMEOUT',
+          undefined,
+          err,
+        );
+        if (attempt < retries) continue;
+        throw lastError;
+      }
+
+      if (err instanceof AppsScriptError) throw err;
+
+      lastError = new AppsScriptError(
+        `Network error calling Server RPC: ${(err as Error).message}`,
+        'NETWORK_ERROR',
+        undefined,
+        err,
+      );
+      if (attempt < retries) continue;
+      throw lastError;
+    }
+  }
+
+  throw lastError ?? new AppsScriptError('Unknown error', 'UNKNOWN_ERROR');
+}
+
 // ============================================================================
 // Core RPC
 // ============================================================================
@@ -148,6 +222,10 @@ export async function callAppsScript<TData = unknown, TPayload = unknown>(
   payload?: TPayload,
   options: CallOptions = {},
 ): Promise<TData> {
+  if (typeof window !== 'undefined') {
+    return callAppsScriptViaApi<TData, TPayload>(action, payload, options);
+  }
+
   const { url, token } = getConfig();
   const timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
   const retries = options.retries ?? DEFAULT_RETRIES;
