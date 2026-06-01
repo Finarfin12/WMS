@@ -1,11 +1,5 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "crons": [
-    {
-      "path": "/api/cron/flush-queue",
-      "schedule": "* * * * *"
-    }
-  ],
   "functions": {
     "app/api/cron/flush-queue/route.ts": {
       "maxDuration": 60
