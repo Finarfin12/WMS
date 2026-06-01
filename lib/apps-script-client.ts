@@ -73,7 +73,8 @@ export type AppsScriptAction =
   | 'bu.uploadLogo'
   // System ops (Phase 5)
   | 'system.reconcile'
-  | 'system.verifyIntegrity';
+  | 'system.verifyIntegrity'
+  | 'audit.list';
 
 /** Standard response dari Apps Script Web App */
 export interface AppsScriptResponse<T = unknown> {

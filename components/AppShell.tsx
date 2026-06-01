@@ -30,6 +30,7 @@ import {
   List,
   Moon,
   Sun,
+  ClipboardText,
   type Icon as IconType,
 } from '@phosphor-icons/react';
 import { logout } from '@/lib/auth';
@@ -53,6 +54,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/history', label: 'History', icon: ClockCounterClockwise },
   { href: '/reports', label: 'Laporan', icon: ChartLine },
   { href: '/import', label: 'Import', icon: Upload, adminOnly: true },
+  { href: '/audit-log', label: 'Audit Log', icon: ClipboardText, adminOnly: true },
   { href: '/users', label: 'Users', icon: UsersIcon, adminOnly: true },
   { href: '/settings', label: 'Pengaturan', icon: Gear, adminOnly: true },
 ];
