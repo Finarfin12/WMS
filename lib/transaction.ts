@@ -83,6 +83,9 @@ export interface BatchOutboundPayload {
   resi?: string;
   courier?: string;
   delivery_cost?: number;
+
+  // Pakta Integritas (centang konfirmasi, muncul saat totalQty >= 100)
+  pakta_confirmed?: boolean;
 }
 
 export interface TransactionSaveResult {

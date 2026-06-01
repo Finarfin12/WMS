@@ -1,12 +1,13 @@
 /**
- * Edge middleware — verify session JWT di setiap request, redirect ke /login kalau invalid.
+ * Proxy — verify session JWT di setiap request, redirect ke /login kalau invalid.
  *
- * Phase 3 (2026-05-31). Signature verify pakai jose (Web Crypto API, edge-compatible).
+ * Phase 3 (2026-05-31). Signature verify pakai jose.
  *
  * Public routes (skip auth):
  *   - /login, /api/auth/*  (login flow)
  *   - /_next/*, /public/*  (static assets)
  *   - /api/system/health   (health check publik)
+ *   - /api/cron/*          (cron/background jobs)
  *
  * SESSION_SECRET wajib di-set di Vercel env vars, sama persis dengan
  * Apps Script Script Properties.
@@ -21,6 +22,7 @@ const PUBLIC_PATHS = [
   '/login',
   '/api/auth',
   '/api/system/health',
+  '/api/cron',
   '/_next',
   '/favicon.ico',
 ];
@@ -41,7 +43,7 @@ async function verifySession(token: string, secret: string) {
   }
 }
 
-export async function middleware(req: NextRequest) {
+export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   if (isPublicPath(pathname)) {
@@ -50,8 +52,7 @@ export async function middleware(req: NextRequest) {
 
   const secret = process.env.SESSION_SECRET;
   if (!secret) {
-    // Fail-closed: kalau secret belum di-set, semua route protected DENY
-    console.error('[middleware] SESSION_SECRET tidak set');
+    console.error('[proxy] SESSION_SECRET tidak set');
     return NextResponse.redirect(new URL('/login?reason=config', req.url));
   }
 
@@ -67,7 +68,6 @@ export async function middleware(req: NextRequest) {
     return res;
   }
 
-  // Pass session info ke handler via header (optional)
   const res = NextResponse.next();
   res.headers.set('x-user-email', session.sub);
   if (session.company) res.headers.set('x-user-company', session.company);
@@ -80,9 +80,10 @@ export const config = {
     /*
      * Match semua route kecuali:
      * - api/auth/* (login flow)
+     * - api/cron/* (background jobs)
      * - _next/static, _next/image (assets)
      * - favicon.ico
      */
-    '/((?!api/auth|_next/static|_next/image|favicon.ico).*)',
+    '/((?!api/auth|api/cron|_next/static|_next/image|favicon.ico).*)',
   ],
 };
