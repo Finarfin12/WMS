@@ -243,7 +243,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Charts: bar + doughnut */}
-      <DashboardCharts bus={data.bu_summaries} />
+      <DashboardCharts bus={data.bu_summaries} trends={data.trends_7d} />
 
       {/* Per-BU summary */}
       <div className="card">

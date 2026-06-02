@@ -16,15 +16,18 @@ import {
   LinearScale,
   BarElement,
   ArcElement,
+  PointElement,
+  LineElement,
+  Filler,
   Title,
   Tooltip,
   Legend,
 } from 'chart.js';
-import { Bar, Doughnut } from 'react-chartjs-2';
-import type { BuSummary } from '@/lib/dashboard';
-import { formatCurrency } from '@/lib/utils';
+import { Bar, Doughnut, Line } from 'react-chartjs-2';
+import type { BuSummary, DashboardData } from '@/lib/dashboard';
+import { formatCurrency, formatDateDmy } from '@/lib/utils';
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Title, Tooltip, Legend);
+ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, PointElement, LineElement, Filler, Title, Tooltip, Legend);
 
 const COLORS = [
   'rgba(37, 99, 235, 0.8)',   // primary blue
@@ -37,7 +40,7 @@ const COLORS = [
 
 const COLORS_BORDER = COLORS.map((c) => c.replace('0.8', '1'));
 
-export function DashboardCharts({ bus }: { bus: BuSummary[] }) {
+export function DashboardCharts({ bus, trends }: { bus: BuSummary[]; trends?: DashboardData['trends_7d'] }) {
   const [textColor, setTextColor] = useState('#1e293b');
 
   useEffect(() => {
@@ -130,13 +133,56 @@ export function DashboardCharts({ bus }: { bus: BuSummary[] }) {
   };
 
   return (
-    <div className="grid md:grid-cols-2 gap-4 mb-4">
-      <div className="card" style={{ height: 320 }}>
-        <Bar data={barData} options={barOptions} />
+    <>
+      {trends && trends.length > 0 && (
+        <div className="card mb-4" style={{ height: 320 }}>
+          <Line
+            data={{
+              labels: trends.map(t => formatDateDmy(t.date).slice(0, 5)),
+              datasets: [
+                {
+                  label: 'Masuk (In)',
+                  data: trends.map(t => t.in),
+                  borderColor: 'rgba(34, 197, 94, 1)',
+                  backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                  borderWidth: 2,
+                  fill: true,
+                  tension: 0.4,
+                },
+                {
+                  label: 'Keluar (Out)',
+                  data: trends.map(t => t.out),
+                  borderColor: 'rgba(239, 68, 68, 1)',
+                  backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                  borderWidth: 2,
+                  fill: true,
+                  tension: 0.4,
+                }
+              ]
+            }}
+            options={{
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: { position: 'top', labels: { color: textColor } },
+                title: { display: true, text: 'Operational Trend (7 Days)', color: textColor, font: { size: 14, weight: 'bold' }, align: 'start' }
+              },
+              scales: {
+                y: { beginAtZero: true, ticks: { color: textColor }, grid: { color: 'rgba(148, 163, 184, 0.2)' } },
+                x: { ticks: { color: textColor }, grid: { display: false } },
+              }
+            }}
+          />
+        </div>
+      )}
+      <div className="grid md:grid-cols-2 gap-4 mb-4">
+        <div className="card" style={{ height: 320 }}>
+          <Bar data={barData} options={barOptions} />
+        </div>
+        <div className="card" style={{ height: 320 }}>
+          <Doughnut data={doughnutData} options={doughnutOptions} />
+        </div>
       </div>
-      <div className="card" style={{ height: 320 }}>
-        <Doughnut data={doughnutData} options={doughnutOptions} />
-      </div>
-    </div>
+    </>
   );
 }

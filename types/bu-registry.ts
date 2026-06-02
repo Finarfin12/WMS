@@ -3,7 +3,7 @@
  * Semua BU di-define di sheet BU_Registry, dibaca runtime via lib/bu-registry.ts.
  */
 
-export type BUType = 'fabric' | 'chemical' | 'product' | 'general';
+export type BUType = 'fabric' | 'chemical' | 'product' | 'product_finished' | 'raw_material' | 'service' | 'other';
 
 export type SuratJalanTemplate = 'canvas' | 'chemical' | 'default';
 

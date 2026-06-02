@@ -23,6 +23,7 @@ import {
   Database,
   ClockCounterClockwise,
   Clock,
+  Buildings,
   ChartLine,
   ChartPieSlice,
   Users as UsersIcon,
@@ -64,6 +65,7 @@ const MAIN_NAV_ITEMS: NavItem[] = [
 const BOTTOM_NAV_ITEMS: NavItem[] = [
   { href: '/last-activity', label: 'Aktivitas Terakhir', icon: Clock },
   { href: '/settings', label: 'Pengaturan', icon: Gear, adminOnly: true },
+  { href: '/bu-registry', label: 'BU Registry', icon: Buildings, superadminOnly: true },
 ];
 
 interface UserSession {

@@ -43,6 +43,7 @@ export interface DashboardData {
   total_items: number;
   low_stock_alerts: LowStockAlert[];
   recent_transactions: RecentTransaction[];
+  trends_7d?: { date: string; in: number; out: number }[];
 }
 
 export async function getDashboardLive(): Promise<DashboardData> {
