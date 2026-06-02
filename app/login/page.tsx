@@ -14,6 +14,7 @@ import { Envelope, LockKey, ArrowRight, ArrowCounterClockwise } from '@phosphor-
 import { checkDomain, requestOtp, verifyOtp } from '@/lib/auth';
 import { toast, alertError } from '@/lib/swal';
 import { RadialLoading } from '@/lib/RadialLoading';
+import { getSystemConfig, type SystemConfig } from '@/lib/system';
 
 type Step = 'email' | 'otp';
 
@@ -25,6 +26,11 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [loadingText, setLoadingText] = useState('');
   const [resendCountdown, setResendCountdown] = useState(0);
+  const [sysConfig, setSysConfig] = useState<SystemConfig | null>(null);
+
+  useEffect(() => {
+    getSystemConfig().then(setSysConfig).catch(console.error);
+  }, []);
 
   useEffect(() => {
     const reason = new URLSearchParams(window.location.search).get('reason');
@@ -139,7 +145,13 @@ export default function LoginPage() {
     <div className="login-wrapper">
       <RadialLoading.Overlay text={loadingText} visible={loading} />
       <div className="login-box">
-        <h2>WMS Gudang</h2>
+        <div className="flex flex-col items-center justify-center mb-2">
+          {sysConfig?.system_logo_url && (
+            /* eslint-disable-next-line @next/next/no-img-element */
+            <img src={sysConfig.system_logo_url} alt="Logo Perusahaan" className="max-h-16 max-w-[200px] object-contain mb-2" />
+          )}
+          <h2>WMS Gudang</h2>
+        </div>
         <p className="subtitle">
           {step === 'email'
             ? 'Login dengan email kantor kamu'

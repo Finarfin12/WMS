@@ -54,3 +54,45 @@ export interface VerifyIntegrityResult {
 export async function verifyIntegrity(): Promise<VerifyIntegrityResult> {
   return callAppsScript<VerifyIntegrityResult>('system.verifyIntegrity');
 }
+
+// ============================================================================
+// System Configuration & Branding
+// ============================================================================
+
+export interface SystemConfig {
+  system_logo_url: string | null;
+  system_logo_id: string | null;
+}
+
+export async function getSystemConfig(): Promise<SystemConfig> {
+  // Try fetching from the public Next.js API first (for client-side components)
+  try {
+    const res = await fetch('/api/system/config');
+    if (res.ok) {
+      const json = await res.json();
+      if (json.success && json.data) {
+        return json.data;
+      }
+    }
+  } catch (err) {
+    // Fallback if not in a browser environment or API fails
+  }
+  
+  // Fallback to AppsScript directly
+  return callAppsScript<SystemConfig, {}>('system.getConfig' as any, {});
+}
+
+export interface UploadLogoPayload {
+  data_base64: string;
+  mime_type: string;
+}
+
+export interface UploadLogoResult {
+  ok: true;
+  file_id: string;
+  file_url: string;
+}
+
+export async function uploadSystemLogo(payload: UploadLogoPayload): Promise<UploadLogoResult> {
+  return callAppsScript<UploadLogoResult, UploadLogoPayload>('system.uploadLogo' as any, payload);
+}

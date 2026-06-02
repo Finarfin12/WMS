@@ -3,7 +3,8 @@
 import { useState } from 'react';
 import { ShieldCheck, ArrowsClockwise } from '@phosphor-icons/react';
 import { verifyIntegrity, reconcileStock } from '@/lib/system';
-import { alertError, toast } from '@/lib/swal';
+import { uploadSystemLogo } from '@/lib/system';
+import { alertError, toast, withLoading } from '@/lib/swal';
 import Swal from 'sweetalert2';
 
 export default function SettingsPage() {
@@ -124,6 +125,68 @@ export default function SettingsPage() {
             ) : (
               <span className="flex items-center gap-2">Mulai Audit Data</span>
             )}
+          </button>
+        </div>
+
+        {/* System Branding / Logo Card */}
+        <div className="card flex flex-col hover:border-[var(--primary)] transition-all">
+          <div className="flex items-center gap-2 mb-2">
+            <ShieldCheck size={24} weight="bold" className="text-primary" />
+            <h2 className="text-xl font-bold text-primary">Logo Sistem</h2>
+          </div>
+          <p className="text-muted text-sm mb-6 flex-1">
+            Ganti logo utama WMS (Sidebar & Halaman Login). Gunakan format PNG tanpa background (maksimal 1 MB).
+          </p>
+          <input
+            type="file"
+            accept="image/png,image/jpeg,image/svg+xml,image/webp"
+            id="logo-upload"
+            className="hidden"
+            onChange={async (e) => {
+              const file = e.target.files?.[0];
+              if (!file) return;
+
+              if (file.size > 1024 * 1024) {
+                toast('Ukuran file maksimal 1 MB', 'error');
+                return;
+              }
+
+              const reader = new FileReader();
+              reader.onload = async (ev) => {
+                const base64Url = ev.target?.result as string;
+                const base64Data = base64Url.split(',')[1];
+                
+                try {
+                  const res = await withLoading(() => uploadSystemLogo({
+                    data_base64: base64Data,
+                    mime_type: file.type
+                  }), { loadingText: 'Mengunggah logo...', silent: false });
+
+                  if (res && res.ok) {
+                    Swal.fire({
+                      icon: 'success',
+                      title: 'Logo Berhasil Diperbarui!',
+                      text: 'Silakan muat ulang (refresh) halaman untuk melihat logo baru.',
+                      confirmButtonColor: 'var(--primary)',
+                    }).then(() => {
+                      window.location.reload();
+                    });
+                  }
+                } catch (err) {
+                  alertError(err, 'Gagal mengunggah logo');
+                }
+              };
+              reader.readAsDataURL(file);
+              
+              // Reset input
+              e.target.value = '';
+            }}
+          />
+          <button 
+            onClick={() => document.getElementById('logo-upload')?.click()}
+            className="btn btn-primary w-full sm:w-auto self-start"
+          >
+            <span className="flex items-center gap-2">Unggah Logo</span>
           </button>
         </div>
 

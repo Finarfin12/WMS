@@ -39,6 +39,7 @@ import {
 import { logout } from '@/lib/auth';
 import { listBus, type BUConfig } from '@/lib/bu-registry';
 import { confirm, toast } from '@/lib/swal';
+import { getSystemConfig, type SystemConfig } from '@/lib/system';
 import { cn } from '@/lib/utils';
 
 interface NavItem {
@@ -83,6 +84,11 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<UserSession | null>(null);
   const [bus, setBus] = useState<BUConfig[]>([]);
   const [activeBu, setActiveBu] = useState<string>('');
+  const [sysConfig, setSysConfig] = useState<SystemConfig | null>(null);
+
+  useEffect(() => {
+    getSystemConfig().then(setSysConfig).catch(console.error);
+  }, []);
 
   // Load user dari localStorage + theme
   useEffect(() => {
@@ -167,7 +173,13 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       <aside className={cn('sidebar', sidebarCollapsed && 'collapsed')}>
         <div className="px-5 mb-6 flex items-center justify-between">
           {!sidebarCollapsed && (
-            <h1 className="text-xl font-extrabold text-white sidebar-label">WMS</h1>
+            <div className="flex items-center gap-2 sidebar-label">
+              {sysConfig?.system_logo_url ? (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img src={sysConfig.system_logo_url} alt="Logo" className="max-h-8 max-w-[120px] object-contain" />
+              ) : null}
+              <h1 className="text-xl font-extrabold text-white">WMS</h1>
+            </div>
           )}
           <button
             type="button"

@@ -21,7 +21,7 @@ const SESSION_COOKIE_NAME = 'wms_session';
 const PUBLIC_PATHS = [
   '/login',
   '/api/auth',
-  '/api/system/health',
+  '/api/system',
   '/api/cron',
   '/_next',
   '/favicon.ico',
