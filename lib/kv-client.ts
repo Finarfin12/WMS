@@ -159,14 +159,8 @@ export function getKv(): KvLike {
     return cached;
   }
 
-  if (process.env.NODE_ENV === 'production') {
-    throw new Error(
-      'KV_REST_API_URL / KV_REST_API_TOKEN tidak di-set. ' +
-      'Production WAJIB pakai Vercel KV. Lihat .env.example.',
-    );
-  }
-
-  // Development fallback
+  // Development fallback & Optional production fallback
+  console.warn('[WMS] KV_REST_API_URL tidak diset. Menggunakan in-memory cache sementara.');
   cached = inMemory;
   return cached;
 }
