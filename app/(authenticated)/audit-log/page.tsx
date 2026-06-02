@@ -49,21 +49,21 @@ const ACTION_GROUPS: { value: string; label: string }[] = [
 ];
 
 const ACTION_COLORS: Record<string, string> = {
-  transaction: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
-  masterData: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
-  auth: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
-  bu: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300',
-  users: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200',
-  import: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
-  archive: 'bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-300',
-  pdf: 'bg-pink-100 text-pink-800 dark:bg-pink-900/30 dark:text-pink-300',
-  superadmin: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
-  pakta: 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-300',
-  system: 'bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-300',
-  migration: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300',
+  transaction: 'bg-green-100 text-green-900 dark:bg-green-900/30 dark:text-green-100',
+  masterData: 'bg-blue-100 text-blue-900 dark:bg-blue-900/30 dark:text-blue-100',
+  auth: 'bg-purple-100 text-purple-900 dark:bg-purple-900/30 dark:text-purple-100',
+  bu: 'bg-orange-100 text-orange-900 dark:bg-orange-900/30 dark:text-orange-100',
+  users: 'bg-gray-200 text-gray-900 dark:bg-gray-700 dark:text-gray-100',
+  import: 'bg-yellow-100 text-yellow-900 dark:bg-yellow-900/30 dark:text-yellow-100',
+  archive: 'bg-slate-200 text-slate-900 dark:bg-slate-700 dark:text-slate-100',
+  pdf: 'bg-pink-100 text-pink-900 dark:bg-pink-900/30 dark:text-pink-100',
+  superadmin: 'bg-red-100 text-red-900 dark:bg-red-900/30 dark:text-red-100',
+  pakta: 'bg-cyan-100 text-cyan-900 dark:bg-cyan-900/30 dark:text-cyan-100',
+  system: 'bg-slate-200 text-slate-900 dark:bg-slate-700 dark:text-slate-100',
+  migration: 'bg-indigo-100 text-indigo-900 dark:bg-indigo-900/30 dark:text-indigo-100',
 };
 
-const DEFAULT_COLOR = 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300';
+const DEFAULT_COLOR = 'bg-gray-200 text-gray-900 dark:bg-gray-800 dark:text-gray-100';
 
 function getActionBadge(action: string): string {
   const prefix = action.split('.')[0] || '';
