@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { ShieldCheck, ArrowsClockwise } from '@phosphor-icons/react';
 import { verifyIntegrity, reconcileStock } from '@/lib/system';
-import { alertError, alertSuccess } from '@/lib/swal';
+import { alertError, toast } from '@/lib/swal';
 import Swal from 'sweetalert2';
 
 export default function SettingsPage() {
@@ -15,7 +15,7 @@ export default function SettingsPage() {
     try {
       const res = await verifyIntegrity();
       if (res.ok) {
-        alertSuccess(`System Sehat! (${res.summary.ok_count} sheet tervalidasi)`);
+        toast(`System Sehat! (${res.summary.ok_count} sheet tervalidasi)`, 'success');
       } else {
         const errorList = [
           ...res.missing_sheets.map(s => `Missing: ${s}`),

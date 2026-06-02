@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { X } from '@phosphor-icons/react';
 import { saveMasterData } from '@/lib/master-data';
-import { alertError, alertSuccess, withLoading } from '@/lib/swal';
+import { alertError, toast, withLoading } from '@/lib/swal';
 
 interface ModalMasterDataProps {
   isOpen: boolean;
@@ -47,7 +47,7 @@ export default function ModalMasterData({ isOpen, onClose, buName, defaultType, 
         { loadingText: 'Menyimpan Master Data...' }
       );
 
-      alertSuccess('Berhasil disimpan!');
+      toast('Berhasil disimpan!', 'success');
       onSuccess(nama);
       onClose();
       setNama('');
