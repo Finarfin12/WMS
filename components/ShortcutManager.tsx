@@ -1,10 +1,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Keyboard, X } from '@phosphor-icons/react';
 
 export function ShortcutManager() {
   const [showModal, setShowModal] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
@@ -13,14 +15,26 @@ export function ShortcutManager() {
         return;
       }
 
-      // Alt + 1, Alt + 2, Alt + 3 for switching BU tabs (by simulating click on tab buttons)
-      if (e.altKey && ['1', '2', '3'].includes(e.key)) {
-        e.preventDefault();
-        const tabBtns = document.querySelectorAll('.tab-header .tab-btn');
-        const idx = parseInt(e.key) - 1;
-        if (tabBtns[idx]) {
-          (tabBtns[idx] as HTMLElement).click();
+      // Navigasi dengan tombol Alt
+      if (e.altKey) {
+        const key = e.key.toLowerCase();
+        
+        // Alt + 1, 2, 3 for switching BU tabs (by simulating click on tab buttons)
+        if (['1', '2', '3'].includes(key)) {
+          e.preventDefault();
+          const tabBtns = document.querySelectorAll('.tab-header .tab-btn');
+          const idx = parseInt(key) - 1;
+          if (tabBtns[idx]) {
+            (tabBtns[idx] as HTMLElement).click();
+          }
         }
+
+        // Alt + Huruf for Menu Navigation
+        if (key === 'd') { e.preventDefault(); router.push('/dashboard'); }
+        if (key === 't') { e.preventDefault(); router.push('/transaction'); }
+        if (key === 's') { e.preventDefault(); router.push('/stock'); }
+        if (key === 'm') { e.preventDefault(); router.push('/master-data'); }
+        if (key === 'h') { e.preventDefault(); router.push('/history'); }
       }
 
       // Ctrl + S for Save
@@ -44,7 +58,7 @@ export function ShortcutManager() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  }, [router]);
 
   // Expose a method to open the modal from outside (via a custom event)
   useEffect(() => {
@@ -81,38 +95,50 @@ export function ShortcutManager() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* Kolom 1: Navigasi */}
             <div>
-              <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4 border-b border-slate-100 dark:border-slate-800 pb-2">Navigasi Utama</h3>
-              <ul className="space-y-4">
+              <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4 border-b border-slate-100 dark:border-slate-800 pb-2">Pindah Menu (Alt)</h3>
+              <ul className="space-y-3">
                 <li className="flex justify-between items-center group">
-                  <span className="text-base font-medium text-slate-700 dark:text-slate-300 group-hover:text-primary transition-colors">Pilih BU Tab Ke-1 (Kiri)</span>
-                  <Kbd>Alt + 1</Kbd>
+                  <span className="text-base font-medium text-slate-700 dark:text-slate-300 group-hover:text-primary transition-colors">Dashboard</span>
+                  <Kbd>Alt + D</Kbd>
                 </li>
                 <li className="flex justify-between items-center group">
-                  <span className="text-base font-medium text-slate-700 dark:text-slate-300 group-hover:text-primary transition-colors">Pilih BU Tab Ke-2 (Tengah)</span>
-                  <Kbd>Alt + 2</Kbd>
+                  <span className="text-base font-medium text-slate-700 dark:text-slate-300 group-hover:text-primary transition-colors">Transaksi</span>
+                  <Kbd>Alt + T</Kbd>
                 </li>
                 <li className="flex justify-between items-center group">
-                  <span className="text-base font-medium text-slate-700 dark:text-slate-300 group-hover:text-primary transition-colors">Pilih BU Tab Ke-3 (Kanan)</span>
-                  <Kbd>Alt + 3</Kbd>
+                  <span className="text-base font-medium text-slate-700 dark:text-slate-300 group-hover:text-primary transition-colors">Stok</span>
+                  <Kbd>Alt + S</Kbd>
                 </li>
                 <li className="flex justify-between items-center group">
-                  <span className="text-base font-medium text-slate-700 dark:text-slate-300 group-hover:text-primary transition-colors">Buka Panduan Ini</span>
-                  <Kbd>Ctrl + /</Kbd>
+                  <span className="text-base font-medium text-slate-700 dark:text-slate-300 group-hover:text-primary transition-colors">Master Data</span>
+                  <Kbd>Alt + M</Kbd>
+                </li>
+                <li className="flex justify-between items-center group">
+                  <span className="text-base font-medium text-slate-700 dark:text-slate-300 group-hover:text-primary transition-colors">History</span>
+                  <Kbd>Alt + H</Kbd>
                 </li>
               </ul>
             </div>
 
-            {/* Kolom 2: Aksi Cepat */}
+            {/* Kolom 2: Aksi Cepat & BU */}
             <div>
-              <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4 border-b border-slate-100 dark:border-slate-800 pb-2">Aksi Cepat</h3>
-              <ul className="space-y-4">
+              <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4 border-b border-slate-100 dark:border-slate-800 pb-2">Aksi Cepat & Pindah BU</h3>
+              <ul className="space-y-3">
                 <li className="flex justify-between items-center group">
-                  <span className="text-base font-medium text-slate-700 dark:text-slate-300 group-hover:text-primary transition-colors">Simpan Form/Transaksi</span>
+                  <span className="text-base font-medium text-slate-700 dark:text-slate-300 group-hover:text-primary transition-colors">Simpan Form / Transaksi</span>
                   <Kbd>Ctrl + S</Kbd>
                 </li>
                 <li className="flex justify-between items-center group">
                   <span className="text-base font-medium text-slate-700 dark:text-slate-300 group-hover:text-primary transition-colors">Fokus Pencarian</span>
                   <Kbd>Ctrl + K</Kbd>
+                </li>
+                <li className="flex justify-between items-center group">
+                  <span className="text-base font-medium text-slate-700 dark:text-slate-300 group-hover:text-primary transition-colors">Pilih BU (Tab 1 / 2 / 3)</span>
+                  <Kbd>Alt + 1 / 2 / 3</Kbd>
+                </li>
+                <li className="flex justify-between items-center group">
+                  <span className="text-base font-medium text-slate-700 dark:text-slate-300 group-hover:text-primary transition-colors">Buka Panduan Ini</span>
+                  <Kbd>Ctrl + /</Kbd>
                 </li>
                 <li className="flex justify-between items-center group">
                   <span className="text-base font-medium text-slate-700 dark:text-slate-300 group-hover:text-primary transition-colors">Tutup Pop-up / Batal</span>
