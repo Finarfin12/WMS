@@ -59,7 +59,7 @@ interface BatchGroup {
 function groupBatches(items: MdRow[]): BatchGroup[] {
   const map = new Map<string, BatchGroup>();
   for (const item of items) {
-    const nama = String(item['Nama Material'] || item['Nama Barang'] || '');
+    const nama = String(item['Nama'] || item['Nama Material'] || item['Nama Barang'] || '');
     const warna = String(item['Warna'] || '');
     const ukuran = String(item['Ukuran'] || '');
     const lebar = String(item['Lebar'] || '');
@@ -204,7 +204,7 @@ export default function MasterDataPage() {
     setForm({
       tipe: (item['Tipe'] as string) || defaultType,
       tanggal: (item['Tanggal'] as string)?.slice(0, 10) || new Date().toISOString().slice(0, 10),
-      nama: (item['Nama Material'] || item['Nama Barang'] || '') as string,
+      nama: (item['Nama'] || item['Nama Material'] || item['Nama Barang'] || '') as string,
       warna: (item['Warna'] as string) || '',
       ukuran: (item['Ukuran'] as string) || '',
       lebar: (item['Lebar'] as string) || '',
@@ -470,7 +470,7 @@ export default function MasterDataPage() {
                       </span>
                     </td>
                     <td className="font-semibold">
-                      {(item['Nama Material'] || item['Nama Barang'] || '-') as string}
+                      {(item['Nama'] || item['Nama Material'] || item['Nama Barang'] || '-') as string}
                     </td>
                     <td className="text-sm text-muted">
                       {[item['Warna'], item['Ukuran'], item['Lebar']]
