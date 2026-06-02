@@ -109,6 +109,134 @@ export default function DashboardPage() {
         />
       </div>
 
+      {/* Operational Live View (BU Stock Cards) */}
+      <div className="mb-6">
+        <h2 className="text-xl font-bold mb-4" style={{ color: 'var(--text-main)' }}>
+          Operational Live View
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {data.bu_summaries.flatMap((bu) => {
+            const isAtrione = bu.bu.toLowerCase().trim() === 'atrione';
+            const uomEntries = Object.entries(bu.totals_by_uom || {}).filter(
+              ([, v]) => v > 0,
+            );
+
+            // Calculate status progress (Ratio of OK items to total items)
+            const totalItemsCount = bu.total_items;
+            const lowStockCount = bu.low_stock_count;
+            const okItemsCount = Math.max(0, totalItemsCount - lowStockCount);
+            const okPercentage = totalItemsCount > 0 ? (okItemsCount / totalItemsCount) * 100 : 100;
+
+            // Calculate daily In/Out (last 24 hours) from recent transactions
+            let dailyIn = 0;
+            let dailyOut = 0;
+            data.recent_transactions.forEach((tx) => {
+              if (tx.bu === bu.bu) {
+                // Check if transaction is in last 24h
+                const txDate = new Date(tx.Tanggal as string);
+                const diffMs = Date.now() - txDate.getTime();
+                const diffHours = diffMs / (1000 * 60 * 60);
+                if (diffHours <= 24) {
+                  dailyIn += (tx.Masuk as number) || 0;
+                  dailyOut += (tx.Keluar as number) || 0;
+                }
+              }
+            });
+
+            // If no UoM, return a generic card
+            if (uomEntries.length === 0) {
+              return [(
+                <div key={`${bu.bu_id}-generic`} className="stat-box hover:border-[var(--primary)] transition-all flex flex-col justify-between bg-white" style={{ minHeight: '190px' }}>
+                  <div>
+                    <h3 className="text-sm font-extrabold uppercase tracking-wider mb-4 text-[var(--text-muted)]">
+                      BU {bu.bu.toUpperCase()}
+                    </h3>
+                    <div className="flex justify-between items-center mb-4">
+                      <div>
+                        <p className="text-3xl font-extrabold text-[var(--text-main)]">0</p>
+                        <p className="text-xs text-[var(--text-muted)] font-semibold uppercase tracking-wider mt-1">
+                          {isAtrione ? 'prs' : (bu.default_uom || 'ITEMS')}
+                        </p>
+                      </div>
+                      {/* Progress Circle */}
+                      <div className="relative flex items-center justify-center shrink-0">
+                        <svg className="w-16 h-16 transform -rotate-90">
+                          <circle cx="32" cy="32" r="26" stroke="var(--border)" strokeWidth="5" fill="transparent" />
+                          <circle
+                            cx="32" cy="32" r="26"
+                            stroke={lowStockCount > 0 ? 'var(--danger)' : 'var(--success)'}
+                            strokeWidth="5" fill="transparent"
+                            strokeDasharray={2 * Math.PI * 26}
+                            strokeDashoffset={2 * Math.PI * 26 * (1 - okPercentage / 100)}
+                            strokeLinecap="round" className="transition-all duration-500"
+                          />
+                        </svg>
+                        <span className="absolute text-xs font-bold text-[var(--text-main)]">{Math.round(okPercentage)}%</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="border-t border-[var(--border)] pt-3 mt-2 flex justify-between items-center text-xs font-semibold">
+                    <div className="flex gap-3 text-muted">
+                      <span className="text-success flex items-center gap-0.5">↑ {dailyIn.toLocaleString('id-ID')}</span>
+                      <span className="text-danger flex items-center gap-0.5">↓ {dailyOut.toLocaleString('id-ID')}</span>
+                    </div>
+                    <span className="text-[var(--text-muted)]">Total: {bu.total_items} Item{bu.total_items !== 1 ? 's' : ''}</span>
+                  </div>
+                </div>
+              )];
+            }
+
+            // Return a card for EACH UoM
+            return uomEntries.map(([uom, qty]) => {
+              const cleanUom = isAtrione ? 'prs' : uom;
+              return (
+                <div key={`${bu.bu_id}-${cleanUom}`} className="stat-box hover:border-[var(--primary)] transition-all flex flex-col justify-between bg-white" style={{ minHeight: '190px' }}>
+                  <div>
+                    <h3 className="text-sm font-extrabold uppercase tracking-wider mb-4 text-[var(--text-muted)]">
+                      BU {bu.bu.toUpperCase()} {uomEntries.length > 1 ? `(${cleanUom.toUpperCase()})` : ''}
+                    </h3>
+                    <div className="flex justify-between items-center mb-4">
+                      <div className="flex flex-col gap-3">
+                        <div className="flex flex-col">
+                          <span className="text-3xl font-extrabold text-[var(--text-main)] leading-none">
+                            {qty.toLocaleString('id-ID')}
+                          </span>
+                          <span className="text-xs text-[var(--text-muted)] font-semibold uppercase tracking-wider mt-1">
+                            {cleanUom}
+                          </span>
+                        </div>
+                      </div>
+                      {/* Progress Circle */}
+                      <div className="relative flex items-center justify-center shrink-0">
+                        <svg className="w-16 h-16 transform -rotate-90">
+                          <circle cx="32" cy="32" r="26" stroke="var(--border)" strokeWidth="5" fill="transparent" />
+                          <circle
+                            cx="32" cy="32" r="26"
+                            stroke={lowStockCount > 0 ? 'var(--danger)' : 'var(--success)'}
+                            strokeWidth="5" fill="transparent"
+                            strokeDasharray={2 * Math.PI * 26}
+                            strokeDashoffset={2 * Math.PI * 26 * (1 - okPercentage / 100)}
+                            strokeLinecap="round" className="transition-all duration-500"
+                          />
+                        </svg>
+                        <span className="absolute text-xs font-bold text-[var(--text-main)]">{Math.round(okPercentage)}%</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="border-t border-[var(--border)] pt-3 mt-2 flex justify-between items-center text-xs font-semibold">
+                    <div className="flex gap-3 text-muted">
+                      <span className="text-success flex items-center gap-0.5">↑ {dailyIn.toLocaleString('id-ID')}</span>
+                      <span className="text-danger flex items-center gap-0.5">↓ {dailyOut.toLocaleString('id-ID')}</span>
+                    </div>
+                    <span className="text-[var(--text-muted)]">Total: {bu.total_items} Item{bu.total_items !== 1 ? 's' : ''}</span>
+                  </div>
+                </div>
+              );
+            });
+          })}
+        </div>
+      </div>
+
       {/* Charts: bar + doughnut */}
       <DashboardCharts bus={data.bu_summaries} />
 
@@ -222,128 +350,7 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Operational Live View (BU Stock Cards) */}
-      <div className="mb-6">
-        <h2 className="text-xl font-bold mb-4" style={{ color: 'var(--text-main)' }}>
-          Operational Live View
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {data.bu_summaries.map((bu) => {
-            const isAtrione = bu.bu.toLowerCase().trim() === 'atrione';
-            const uomEntries = Object.entries(bu.totals_by_uom || {}).filter(
-              ([, v]) => v > 0,
-            );
-
-            // Calculate status progress (Ratio of OK items to total items)
-            const totalItemsCount = bu.total_items;
-            const lowStockCount = bu.low_stock_count;
-            const okItemsCount = Math.max(0, totalItemsCount - lowStockCount);
-            const okPercentage = totalItemsCount > 0 ? (okItemsCount / totalItemsCount) * 100 : 100;
-
-            // Calculate daily In/Out (last 24 hours) from recent transactions
-            let dailyIn = 0;
-            let dailyOut = 0;
-            data.recent_transactions.forEach((tx) => {
-              if (tx.bu === bu.bu) {
-                // Check if transaction is in last 24h
-                const txDate = new Date(tx.Tanggal as string);
-                const diffMs = Date.now() - txDate.getTime();
-                const diffHours = diffMs / (1000 * 60 * 60);
-                if (diffHours <= 24) {
-                  dailyIn += (tx.Masuk as number) || 0;
-                  dailyOut += (tx.Keluar as number) || 0;
-                }
-              }
-            });
-
-            return (
-              <div key={bu.bu_id} className="stat-box hover:border-[var(--primary)] transition-all flex flex-col justify-between" style={{ minHeight: '190px' }}>
-                <div>
-                  {/* Card Title */}
-                  <h3 className="text-sm font-extrabold uppercase tracking-wider mb-4 text-[var(--text-muted)]">
-                    BU {bu.bu.toUpperCase()}
-                  </h3>
-
-                  {/* Body: Left (Stock Numbers) and Right (Circle Chart) */}
-                  <div className="flex justify-between items-center mb-4">
-                    <div className="flex flex-col gap-3">
-                      {uomEntries.length === 0 ? (
-                        <div>
-                          <p className="text-3xl font-extrabold text-[var(--text-main)]">0</p>
-                          <p className="text-xs text-[var(--text-muted)] font-semibold uppercase tracking-wider mt-1">
-                            {isAtrione ? 'prs' : (bu.default_uom || 'ITEMS')}
-                          </p>
-                        </div>
-                      ) : (
-                        uomEntries.map(([uom, qty]) => {
-                          const cleanUom = isAtrione ? 'prs' : uom;
-                          return (
-                            <div key={uom} className="flex flex-col">
-                              <span className="text-3xl font-extrabold text-[var(--text-main)] leading-none">
-                                {qty.toLocaleString('id-ID')}
-                              </span>
-                              <span className="text-xs text-[var(--text-muted)] font-semibold uppercase tracking-wider mt-1">
-                                {cleanUom}
-                              </span>
-                            </div>
-                          );
-                        })
-                      )}
-                    </div>
-
-                    {/* Progress Circle */}
-                    <div className="relative flex items-center justify-center shrink-0">
-                      <svg className="w-16 h-16 transform -rotate-90">
-                        {/* Background track circle */}
-                        <circle
-                          cx="32"
-                          cy="32"
-                          r="26"
-                          stroke="var(--border)"
-                          strokeWidth="5"
-                          fill="transparent"
-                        />
-                        {/* Status track (Red if there are low stock alerts, otherwise green/success) */}
-                        <circle
-                          cx="32"
-                          cy="32"
-                          r="26"
-                          stroke={lowStockCount > 0 ? 'var(--danger)' : 'var(--success)'}
-                          strokeWidth="5"
-                          fill="transparent"
-                          strokeDasharray={2 * Math.PI * 26}
-                          strokeDashoffset={2 * Math.PI * 26 * (1 - okPercentage / 100)}
-                          strokeLinecap="round"
-                          className="transition-all duration-500"
-                        />
-                      </svg>
-                      {/* Percent Text inside Circle */}
-                      <span className="absolute text-xs font-bold text-[var(--text-main)]">
-                        {Math.round(okPercentage)}%
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Footer */}
-                <div className="border-t border-[var(--border)] pt-3 mt-2 flex justify-between items-center text-xs font-semibold">
-                  <div className="flex gap-3 text-muted">
-                    <span className="text-success flex items-center gap-0.5">
-                      ↑ {dailyIn.toLocaleString('id-ID')}
-                    </span>
-                    <span className="text-danger flex items-center gap-0.5">
-                      ↓ {dailyOut.toLocaleString('id-ID')}
-                    </span>
-                  </div>
-                  <span className="text-[var(--text-muted)]">
-                    Total: {bu.total_items} Item{bu.total_items !== 1 ? 's' : ''}
-                  </span>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
+      {/* (Moved Operational Live View up) */}
     </div>
   );
 }

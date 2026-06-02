@@ -49,6 +49,7 @@ interface NavItem {
 
 const MAIN_NAV_ITEMS: NavItem[] = [
   { href: '/dashboard', label: 'Dashboard', icon: House },
+  { href: '/global-summary', label: 'Global Summary', icon: ChartPieSlice },
   { href: '/transaction', label: 'Transaksi', icon: Receipt },
   { href: '/stock', label: 'Stok', icon: Package },
   { href: '/master-data', label: 'Master Data', icon: Database },

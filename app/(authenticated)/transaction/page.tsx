@@ -22,6 +22,7 @@ import { RadialLoading } from '@/lib/RadialLoading';
 import { toast, alertError, withLoading } from '@/lib/swal';
 import { formatDateDmy, parseHargaID, formatHargaDisplay } from '@/lib/utils';
 import Link from 'next/link';
+import ModalMasterData from '@/components/ModalMasterData';
 
 type Tab = 'masuk' | 'keluar' | 'list';
 
@@ -93,6 +94,27 @@ export default function TransactionPage() {
   const [showPakta, setShowPakta] = useState(false);
   const [paktaChecked, setPaktaChecked] = useState(false);
   const [paktaConfirmed, setPaktaConfirmed] = useState(false);
+
+  // === Modal State ===
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalType, setModalType] = useState('');
+  const openModal = (type: string) => {
+    setModalType(type);
+    setModalOpen(true);
+  };
+  const handleModalSuccess = (newName: string) => {
+    if (modalType === 'Produk Baru' || modalType === 'Material Baru') {
+      setMaterialOptions(prev => [...new Set([...prev, newName])]);
+      setForm(f => ({ ...f, nama: newName }));
+    } else if (modalType === 'Customer Baru') {
+      setCustomerOptions(prev => [...new Set([...prev, newName])]);
+      setForm(f => ({ ...f, customer: newName }));
+      setHeader(h => ({ ...h, customer: newName }));
+    } else if (modalType === 'Payment Method') {
+      setPaymentOptions(prev => [...new Set([...prev, newName])]);
+      setHeader(h => ({ ...h, payment_method: newName }));
+    }
+  };
 
   // Sync BU
   useEffect(() => {
@@ -665,7 +687,7 @@ export default function TransactionPage() {
             <div className="form-group">
               <label className="flex justify-between items-center">
                 <span>Nama Barang</span>
-                <Link href="/master-data" className="text-xs text-primary hover:underline">+ Tambah Baru</Link>
+                <button type="button" onClick={() => openModal(buConfig?.bu_id === 'atrione' ? 'Produk Baru' : 'Material Baru')} className="text-xs text-primary hover:underline">+ Tambah Baru</button>
               </label>
               {optionsLoading.material ? (
                 <div className="form-control flex items-center"><RadialLoading size={16} /></div>
@@ -795,7 +817,7 @@ export default function TransactionPage() {
             <div className="form-group">
               <label className="flex justify-between items-center">
                 <span>Customer / Supplier</span>
-                <Link href="/master-data" className="text-xs text-primary hover:underline">+ Tambah Baru</Link>
+                <button type="button" onClick={() => openModal('Customer Baru')} className="text-xs text-primary hover:underline">+ Tambah Baru</button>
               </label>
               {optionsLoading.customers ? (
                 <div className="form-control flex items-center"><RadialLoading size={16} /></div>
@@ -871,7 +893,7 @@ export default function TransactionPage() {
               <div className="form-group">
                 <label className="flex justify-between items-center">
                   <span>Customer</span>
-                  <Link href="/master-data" className="text-xs text-primary hover:underline">+ Tambah Baru</Link>
+                  <button type="button" onClick={() => openModal('Customer Baru')} className="text-xs text-primary hover:underline">+ Tambah Baru</button>
                 </label>
                 {optionsLoading.customers ? (
                   <div className="form-control flex items-center"><RadialLoading size={16} /></div>
@@ -920,7 +942,7 @@ export default function TransactionPage() {
                   <div className="form-group">
                     <label className="flex justify-between items-center">
                       <span>Metode Pembayaran</span>
-                      <Link href="/master-data" className="text-xs text-primary hover:underline">+ Tambah Baru</Link>
+                      <button type="button" onClick={() => openModal('Payment Method')} className="text-xs text-primary hover:underline">+ Tambah Baru</button>
                     </label>
                     {optionsLoading.payments ? (
                       <div className="form-control flex items-center"><RadialLoading size={16} /></div>
@@ -1181,6 +1203,15 @@ export default function TransactionPage() {
           </div>
         </div>
       )}
+
+      {/* === Master Data Modal === */}
+      <ModalMasterData
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        buName={bu}
+        defaultType={modalType}
+        onSuccess={handleModalSuccess}
+      />
     </div>
   );
 }

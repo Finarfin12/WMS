@@ -61,3 +61,8 @@ export async function getDashboardLive(): Promise<DashboardData> {
   
   return data;
 }
+
+export async function getDashboardGlobalSummary(): Promise<any[]> {
+  const result = await callAppsScript<{ data: any[] }>('dashboard.globalSummary');
+  return result.data || [];
+}
