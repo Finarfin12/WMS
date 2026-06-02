@@ -137,6 +137,7 @@ export default function LoginPage() {
 
   return (
     <div className="login-wrapper">
+      <RadialLoading.Overlay text={loadingText} visible={loading} />
       <div className="login-box">
         <h2>WMS Gudang</h2>
         <p className="subtitle">

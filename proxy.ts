@@ -37,7 +37,7 @@ async function verifySession(token: string, secret: string) {
     const { payload } = await jwtVerify(token, encoded, {
       algorithms: ['HS256'],
     });
-    return payload as { sub: string; company: string | null; iat: number; exp: number };
+    return payload as { sub: string; company: string | null; role: string; iat: number; exp: number };
   } catch {
     return null;
   }
@@ -68,11 +68,18 @@ export async function proxy(req: NextRequest) {
     return res;
   }
 
-  const res = NextResponse.next();
-  res.headers.set('x-user-email', session.sub);
-  if (session.company) res.headers.set('x-user-company', session.company);
+  const requestHeaders = new Headers(req.headers);
+  requestHeaders.set('x-user-email', session.sub);
+  requestHeaders.set('x-user-role', session.role || 'User');
+  if (session.company) {
+    requestHeaders.set('x-user-company', session.company);
+  }
 
-  return res;
+  return NextResponse.next({
+    request: {
+      headers: requestHeaders,
+    },
+  });
 }
 
 export const config = {

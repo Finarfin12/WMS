@@ -22,6 +22,7 @@ import {
   Package,
   Database,
   ClockCounterClockwise,
+  Clock,
   ChartLine,
   Users as UsersIcon,
   Upload,
@@ -46,7 +47,7 @@ interface NavItem {
   superadminOnly?: boolean;     // Hanya Superadmin
 }
 
-const NAV_ITEMS: NavItem[] = [
+const MAIN_NAV_ITEMS: NavItem[] = [
   { href: '/dashboard', label: 'Dashboard', icon: House },
   { href: '/transaction', label: 'Transaksi', icon: Receipt },
   { href: '/stock', label: 'Stok', icon: Package },
@@ -56,6 +57,10 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/import', label: 'Import', icon: Upload, adminOnly: true },
   { href: '/audit-log', label: 'Audit Log', icon: ClipboardText, adminOnly: true },
   { href: '/users', label: 'Users', icon: UsersIcon, adminOnly: true },
+];
+
+const BOTTOM_NAV_ITEMS: NavItem[] = [
+  { href: '/last-activity', label: 'Aktivitas Terakhir', icon: Clock },
   { href: '/settings', label: 'Pengaturan', icon: Gear, adminOnly: true },
 ];
 
@@ -143,7 +148,14 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     router.push('/login');
   }
 
-  if (!user) return null;
+  if (!user) {
+    return (
+      <div className="flex flex-col items-center justify-center h-screen w-screen bg-[var(--bg-color)] gap-4">
+        <div className="radial-loading spin" style={{ width: '60px', height: '60px' }} />
+        <span className="text-sm font-semibold text-[var(--text-muted)]">Memuat Sesi...</span>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen overflow-hidden">
@@ -164,7 +176,30 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         </div>
 
         <nav className="flex-1 overflow-y-auto">
-          {NAV_ITEMS.filter((item) => {
+          {MAIN_NAV_ITEMS.filter((item) => {
+            if (item.superadminOnly) return user.role === 'Superadmin';
+            if (item.adminOnly) return user.role === 'Admin' || user.role === 'Superadmin';
+            return true;
+          }).map((item) => {
+            const Icon = item.icon;
+            const isActive = pathname.startsWith(item.href);
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={cn('nav-item', isActive && 'active')}
+                title={sidebarCollapsed ? item.label : undefined}
+              >
+                <Icon size={20} weight={isActive ? 'fill' : 'regular'} />
+                <span className="sidebar-label">{item.label}</span>
+              </Link>
+            );
+          })}
+        </nav>
+
+        {/* Bottom Nav */}
+        <nav className="border-t border-white/10 pt-2 pb-2">
+          {BOTTOM_NAV_ITEMS.filter((item) => {
             if (item.superadminOnly) return user.role === 'Superadmin';
             if (item.adminOnly) return user.role === 'Admin' || user.role === 'Superadmin';
             return true;
@@ -188,11 +223,11 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         {/* User profile bottom */}
         <div className="border-t border-white/10 p-4 flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center font-bold text-white shrink-0">
-            {user.username[0].toUpperCase()}
+            {(user.username || user.email || '?')[0].toUpperCase()}
           </div>
           {!sidebarCollapsed && (
             <div className="flex-1 min-w-0 sidebar-label">
-              <p className="text-sm font-semibold text-white truncate">{user.username}</p>
+              <p className="text-sm font-semibold text-white truncate">{user.username || user.email}</p>
               <p className="text-xs text-white/70 truncate">{user.role}</p>
             </div>
           )}
@@ -236,7 +271,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                 onClick={() => selectBu(bu.bu_name)}
                 className={cn('tab-btn', activeBu === bu.bu_name && 'active')}
               >
-                <span>{bu.icon}</span>
                 <span>{bu.bu_name}</span>
               </button>
             ))}

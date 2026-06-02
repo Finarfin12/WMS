@@ -17,6 +17,7 @@ export interface BuSummary {
   totals_by_uom: Record<string, number>;
   inventory_value: number;
   low_stock_count: number;
+  default_uom?: string;
   error?: string;
 }
 
@@ -45,5 +46,18 @@ export interface DashboardData {
 }
 
 export async function getDashboardLive(): Promise<DashboardData> {
-  return callAppsScript<DashboardData>('dashboard.live');
+  const data = await callAppsScript<DashboardData>('dashboard.live');
+  const stripEmoji = (str: string) => str?.replace(/[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu, '').trim() || str;
+  
+  if (data?.bu_summaries) {
+    data.bu_summaries = data.bu_summaries.map(b => ({ ...b, bu: stripEmoji(b.bu) }));
+  }
+  if (data?.low_stock_alerts) {
+    data.low_stock_alerts = data.low_stock_alerts.map(a => ({ ...a, bu: stripEmoji(a.bu) }));
+  }
+  if (data?.recent_transactions) {
+    data.recent_transactions = data.recent_transactions.map(t => ({ ...t, bu: stripEmoji(t.bu) }));
+  }
+  
+  return data;
 }

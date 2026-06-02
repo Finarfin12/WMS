@@ -48,6 +48,18 @@ export async function POST(
     );
   }
 
+  // Securely inject actor context from request headers verified by middleware
+  const userEmail = request.headers.get('x-user-email');
+  const userRole = request.headers.get('x-user-role');
+  if (userEmail && userRole) {
+    if (!body.payload || typeof body.payload !== 'object') {
+      body.payload = {};
+    }
+    const payload = body.payload as Record<string, unknown>;
+    payload._actor_email = userEmail;
+    payload._actor_role = userRole;
+  }
+
   try {
     const data = await callAppsScript(action, body.payload);
     return NextResponse.json({ success: true, data });

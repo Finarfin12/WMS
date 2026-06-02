@@ -122,7 +122,7 @@ export default function MasterDataPage() {
   }
 
   const [form, setForm] = useState({
-    tipe: 'Produk Baru',
+    tipe: 'Material Baru',
     tanggal: new Date().toISOString().slice(0, 10),
     nama: '',
     warna: '',
@@ -153,7 +153,8 @@ export default function MasterDataPage() {
         const found = bus.find((b) => b.bu_name === bu);
         if (found) {
           setBuConfig(found);
-          setForm((f) => ({ ...f, uom: found.default_uom || '' }));
+          const defaultType = found.bu_id === 'atrione' ? 'Produk Baru' : 'Material Baru';
+          setForm((f) => ({ ...f, tipe: defaultType, uom: found.default_uom || '' }));
         }
       })
       .catch(alertError);
@@ -177,9 +178,11 @@ export default function MasterDataPage() {
   }, [load]);
 
   function openNew() {
+    const isAtrione = buConfig?.bu_id === 'atrione';
+    const defaultType = isAtrione ? 'Produk Baru' : 'Material Baru';
     setEditingId(null);
     setForm({
-      tipe: 'Produk Baru',
+      tipe: defaultType,
       tanggal: new Date().toISOString().slice(0, 10),
       nama: '',
       warna: '',
@@ -195,9 +198,11 @@ export default function MasterDataPage() {
   }
 
   function openEdit(item: MdRow) {
+    const isAtrione = buConfig?.bu_id === 'atrione';
+    const defaultType = isAtrione ? 'Produk Baru' : 'Material Baru';
     setEditingId((item.ID as string) || null);
     setForm({
-      tipe: (item['Tipe'] as string) || 'Adjustment',
+      tipe: (item['Tipe'] as string) || defaultType,
       tanggal: (item['Tanggal'] as string)?.slice(0, 10) || new Date().toISOString().slice(0, 10),
       nama: (item['Nama Material'] || item['Nama Barang'] || '') as string,
       warna: (item['Warna'] as string) || '',
@@ -219,24 +224,29 @@ export default function MasterDataPage() {
       return;
     }
 
+    const hideExtraFields = form.tipe === 'Customer Baru' || form.tipe === 'Payment Method';
+
     const payload: MasterDataSavePayload = {
       bu,
       tipe: form.tipe,
       tanggal: form.tanggal,
       nama: form.nama,
-      uom: form.uom,
-      warna: form.warna || undefined,
-      ukuran: form.ukuran || undefined,
-      lebar: form.lebar || undefined,
-      harga_jual: form.harga_jual ? parseFloat(form.harga_jual) : 0,
-      hpp: form.hpp ? parseFloat(form.hpp) : undefined,
-      satuan_harga: form.satuan_harga as 'IDR' | 'USD',
-      stok_awal: form.stok_awal ? parseFloat(form.stok_awal) : 0,
+      uom: hideExtraFields ? (buConfig?.default_uom || 'Unit') : form.uom,
+      warna: !hideExtraFields && form.warna ? form.warna : undefined,
+      ukuran: !hideExtraFields && form.ukuran ? form.ukuran : undefined,
+      lebar: !hideExtraFields && form.lebar ? form.lebar : undefined,
+      harga_jual: !hideExtraFields && form.harga_jual ? parseFloat(form.harga_jual) : 0,
+      hpp: !hideExtraFields && form.hpp ? parseFloat(form.hpp) : undefined,
+      satuan_harga: (!hideExtraFields ? form.satuan_harga : 'IDR') as 'IDR' | 'USD',
+      stok_awal: !hideExtraFields && form.stok_awal ? parseFloat(form.stok_awal) : 0,
     };
+
+    if (editingId) {
+      payload.id = editingId;
+    }
 
     const result = await withLoading(() => saveMasterData(payload), {
       loadingText: editingId ? 'Mengupdate…' : 'Menyimpan…',
-      // Custom message berdasarkan source
     });
 
     if (result) {
@@ -271,6 +281,7 @@ export default function MasterDataPage() {
   }
 
   const flags = buConfig ? getBuFlags(buConfig) : null;
+  const isAtrione = buConfig?.bu_id === 'atrione';
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
@@ -537,9 +548,18 @@ export default function MasterDataPage() {
                     value={form.tipe}
                     onChange={(e) => setForm({ ...form, tipe: e.target.value })}
                   >
-                    <option>Produk Baru</option>
-                    <option>Restock</option>
-                    <option>Adjustment</option>
+                    {isAtrione ? (
+                      <>
+                        <option value="Produk Baru">Produk Baru</option>
+                        <option value="Customer Baru">Customer Baru</option>
+                        <option value="Payment Method">Payment Method</option>
+                      </>
+                    ) : (
+                      <>
+                        <option value="Material Baru">Material Baru</option>
+                        <option value="Customer Baru">Customer Baru</option>
+                      </>
+                    )}
                   </select>
                 </div>
                 <div className="form-group">
@@ -552,7 +572,7 @@ export default function MasterDataPage() {
                   />
                 </div>
                 <div className="form-group md:col-span-2">
-                  <label>Nama Barang</label>
+                  <label>{(form.tipe === 'Customer Baru' || form.tipe === 'Payment Method') ? 'Nama' : 'Nama Barang'}</label>
                   <input
                     type="text"
                     className="form-control"
@@ -562,89 +582,94 @@ export default function MasterDataPage() {
                   />
                 </div>
 
-                {flags?.has_color && (
-                  <div className="form-group">
-                    <label>Warna</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      value={form.warna}
-                      onChange={(e) => setForm({ ...form, warna: e.target.value })}
-                    />
-                  </div>
+                {/* Hide fields for Customer and Payment Method */}
+                {form.tipe !== 'Customer Baru' && form.tipe !== 'Payment Method' && (
+                  <>
+                    {flags?.has_color && (
+                      <div className="form-group">
+                        <label>Warna</label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          value={form.warna}
+                          onChange={(e) => setForm({ ...form, warna: e.target.value })}
+                        />
+                      </div>
+                    )}
+                    {flags?.has_size && (
+                      <div className="form-group">
+                        <label>Ukuran</label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          value={form.ukuran}
+                          onChange={(e) => setForm({ ...form, ukuran: e.target.value })}
+                        />
+                      </div>
+                    )}
+                    {flags?.has_width && (
+                      <div className="form-group">
+                        <label>Lebar</label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          value={form.lebar}
+                          onChange={(e) => setForm({ ...form, lebar: e.target.value })}
+                        />
+                      </div>
+                    )}
+                    <div className="form-group">
+                      <label>UoM</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={form.uom}
+                        onChange={(e) => setForm({ ...form, uom: e.target.value })}
+                        required
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label>Harga Jual</label>
+                      <input
+                        type="number"
+                        className="form-control"
+                        value={form.harga_jual}
+                        onChange={(e) => setForm({ ...form, harga_jual: e.target.value })}
+                      />
+                    </div>
+                    {flags?.has_hpp && (
+                      <div className="form-group">
+                        <label>HPP</label>
+                        <input
+                          type="number"
+                          className="form-control"
+                          value={form.hpp}
+                          onChange={(e) => setForm({ ...form, hpp: e.target.value })}
+                        />
+                      </div>
+                    )}
+                    <div className="form-group">
+                      <label>Satuan Harga</label>
+                      <select
+                        className="form-control"
+                        value={form.satuan_harga}
+                        onChange={(e) => setForm({ ...form, satuan_harga: e.target.value })}
+                      >
+                        <option value="IDR">IDR</option>
+                        <option value="USD">USD</option>
+                      </select>
+                    </div>
+                    <div className="form-group">
+                      <label>Stok Awal</label>
+                      <input
+                        type="number"
+                        className="form-control"
+                        value={form.stok_awal}
+                        onChange={(e) => setForm({ ...form, stok_awal: e.target.value })}
+                      />
+                    </div>
+                  </>
                 )}
-                {flags?.has_size && (
-                  <div className="form-group">
-                    <label>Ukuran</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      value={form.ukuran}
-                      onChange={(e) => setForm({ ...form, ukuran: e.target.value })}
-                    />
-                  </div>
-                )}
-                {flags?.has_width && (
-                  <div className="form-group">
-                    <label>Lebar</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      value={form.lebar}
-                      onChange={(e) => setForm({ ...form, lebar: e.target.value })}
-                    />
-                  </div>
-                )}
-                <div className="form-group">
-                  <label>UoM</label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    value={form.uom}
-                    onChange={(e) => setForm({ ...form, uom: e.target.value })}
-                    required
-                  />
-                </div>
-                <div className="form-group">
-                  <label>Harga Jual</label>
-                  <input
-                    type="number"
-                    className="form-control"
-                    value={form.harga_jual}
-                    onChange={(e) => setForm({ ...form, harga_jual: e.target.value })}
-                  />
-                </div>
-                {flags?.has_hpp && (
-                  <div className="form-group">
-                    <label>HPP</label>
-                    <input
-                      type="number"
-                      className="form-control"
-                      value={form.hpp}
-                      onChange={(e) => setForm({ ...form, hpp: e.target.value })}
-                    />
-                  </div>
-                )}
-                <div className="form-group">
-                  <label>Satuan Harga</label>
-                  <select
-                    className="form-control"
-                    value={form.satuan_harga}
-                    onChange={(e) => setForm({ ...form, satuan_harga: e.target.value })}
-                  >
-                    <option value="IDR">IDR</option>
-                    <option value="USD">USD</option>
-                  </select>
-                </div>
-                <div className="form-group">
-                  <label>Stok Awal</label>
-                  <input
-                    type="number"
-                    className="form-control"
-                    value={form.stok_awal}
-                    onChange={(e) => setForm({ ...form, stok_awal: e.target.value })}
-                  />
-                </div>
               </div>
 
               <div className="flex gap-3 mt-4">

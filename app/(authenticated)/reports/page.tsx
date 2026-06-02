@@ -17,7 +17,7 @@ import {
 import { getProfitReport, getExportData, type ProfitReport } from '@/lib/reports';
 import { RadialLoading } from '@/lib/RadialLoading';
 import { alertError, toast, withLoading } from '@/lib/swal';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, formatDateDmy } from '@/lib/utils';
 
 type GroupBy = 'product' | 'customer' | 'date';
 
@@ -78,14 +78,141 @@ export default function ReportsPage() {
     );
 
     if (result) {
-      // Render Excel di client pakai SheetJS (xlsx)
-      const xlsx = await import('xlsx');
-      const ws = xlsx.utils.json_to_sheet(result.rows);
-      const wb = xlsx.utils.book_new();
-      xlsx.utils.book_append_sheet(wb, ws, result.title.slice(0, 31));
-      const filename = `${result.title}_${filters.from}_${filters.to}.xlsx`;
-      xlsx.writeFile(wb, filename);
-      toast(`File ${filename} ter-download`, 'success');
+      try {
+        const ExcelJS = await import('exceljs');
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet(result.title.slice(0, 31));
+
+        // 1. Add Title row (A2)
+        worksheet.addRow([]); // Row 1 empty
+        worksheet.mergeCells('A2:H2');
+        const titleCell = worksheet.getCell('A2');
+        titleCell.value = `${result.title} - BU ${bu}`;
+        titleCell.font = { name: 'Arial', size: 16, bold: true, color: { argb: 'FF1E3A8A' } };
+        titleCell.alignment = { vertical: 'middle', horizontal: 'center' };
+        worksheet.getRow(2).height = 30;
+
+        // 2. Add Period row (A3)
+        worksheet.mergeCells('A3:H3');
+        const periodCell = worksheet.getCell('A3');
+        periodCell.value = `Periode: ${formatDateDmy(filters.from)} s/d ${formatDateDmy(filters.to)}`;
+        periodCell.font = { name: 'Arial', size: 10, italic: true, color: { argb: 'FF475569' } };
+        periodCell.alignment = { vertical: 'middle', horizontal: 'center' };
+        worksheet.getRow(3).height = 20;
+
+        worksheet.addRow([]); // Row 4 empty
+
+        // 3. Add Headers (Row 5)
+        const keys = Object.keys(result.rows[0] || {});
+        if (keys.length > 0) {
+          const headers = keys.map((k) => k.charAt(0).toUpperCase() + k.slice(1));
+          const headerRow = worksheet.addRow(headers);
+          headerRow.height = 25;
+          headerRow.eachCell((cell) => {
+            cell.fill = {
+              type: 'pattern',
+              pattern: 'solid',
+              fgColor: { argb: 'FF2563EB' }, // Primary blue color
+            };
+            cell.font = {
+              name: 'Arial',
+              size: 10,
+              bold: true,
+              color: { argb: 'FFFFFFFF' },
+            };
+            cell.alignment = { vertical: 'middle', horizontal: 'center' };
+            cell.border = {
+              top: { style: 'thin', color: { argb: 'FF94A3B8' } },
+              bottom: { style: 'medium', color: { argb: 'FF1E293B' } },
+              left: { style: 'thin', color: { argb: 'FF94A3B8' } },
+              right: { style: 'thin', color: { argb: 'FF94A3B8' } },
+            };
+          });
+
+          // 4. Add Data Rows
+          result.rows.forEach((rowObj: any) => {
+            const values = keys.map((key) => rowObj[key]);
+            const dataRow = worksheet.addRow(values);
+            dataRow.height = 20;
+
+            dataRow.eachCell((cell, colNumber) => {
+              const keyName = keys[colNumber - 1].toLowerCase();
+              const val = cell.value;
+
+              cell.font = { name: 'Arial', size: 9 };
+              cell.alignment = { vertical: 'middle' };
+              cell.border = {
+                top: { style: 'thin', color: { argb: 'FFE2E8F0' } },
+                bottom: { style: 'thin', color: { argb: 'FFE2E8F0' } },
+                left: { style: 'thin', color: { argb: 'FFE2E8F0' } },
+                right: { style: 'thin', color: { argb: 'FFE2E8F0' } },
+              };
+
+              // Number formatting
+              if (typeof val === 'number') {
+                if (
+                  keyName.includes('harga') ||
+                  keyName.includes('hpp') ||
+                  keyName.includes('value') ||
+                  keyName.includes('penjualan') ||
+                  keyName.includes('laba') ||
+                  keyName.includes('margin')
+                ) {
+                  const isUsd = String(rowObj['Mata Uang'] || rowObj['currency'] || '').toUpperCase() === 'USD';
+                  cell.numFmt = isUsd ? '$#,##0.00' : '"Rp"#,##0';
+                  cell.alignment = { vertical: 'middle', horizontal: 'right' };
+                } else if (
+                  keyName.includes('qty') ||
+                  keyName.includes('masuk') ||
+                  keyName.includes('keluar') ||
+                  keyName.includes('stok') ||
+                  keyName.includes('jumlah')
+                ) {
+                  cell.numFmt = '#,##0';
+                  cell.alignment = { vertical: 'middle', horizontal: 'right' };
+                } else {
+                  cell.alignment = { vertical: 'middle', horizontal: 'right' };
+                }
+              } else {
+                if (keyName.includes('tanggal') || keyName.includes('date')) {
+                  cell.alignment = { vertical: 'middle', horizontal: 'center' };
+                } else {
+                  cell.alignment = { vertical: 'middle', horizontal: 'left' };
+                }
+              }
+            });
+          });
+
+          // 5. Auto-fit column widths
+          worksheet.columns.forEach((column) => {
+            let maxLength = 0;
+            column.eachCell?.({ includeEmpty: true }, (cell) => {
+              const cellLength = cell.value ? String(cell.value).length : 0;
+              if (cellLength > maxLength) {
+                maxLength = cellLength;
+              }
+            });
+            column.width = Math.max(maxLength + 4, 12);
+          });
+        }
+
+        // 6. Write buffer and trigger download
+        const buffer = await workbook.xlsx.writeBuffer();
+        const blob = new Blob([buffer], {
+          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        const filename = `${result.title}_${filters.from}_${filters.to}.xlsx`;
+        a.download = filename;
+        a.click();
+        window.URL.revokeObjectURL(url);
+
+        toast(`File ${filename} ter-download`, 'success');
+      } catch (err: any) {
+        alertError(err, 'Gagal mengexport file');
+      }
     }
   }
 

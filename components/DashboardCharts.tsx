@@ -57,7 +57,7 @@ export function DashboardCharts({ bus }: { bus: BuSummary[] }) {
 
   // Bar chart: Total Items per BU
   const barData = {
-    labels: valid.map((b) => `${b.icon} ${b.bu}`),
+    labels: valid.map((b) => b.bu),
     datasets: [
       {
         label: 'Total Items',
@@ -93,7 +93,7 @@ export function DashboardCharts({ bus }: { bus: BuSummary[] }) {
 
   // Doughnut: Inventory Value share per BU
   const doughnutData = {
-    labels: valid.map((b) => `${b.icon} ${b.bu}`),
+    labels: valid.map((b) => b.bu),
     datasets: [
       {
         label: 'Inventory Value',
