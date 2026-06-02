@@ -145,7 +145,7 @@ export async function saveTransaction(
   return callAppsScriptResilient<TransactionSaveResult, TransactionInboundPayload>(
     'transaction.save',
     { ...payload, ...actor },
-    { user: actor._actor_email },
+    { user: actor._actor_username },
   );
 }
 
@@ -163,7 +163,7 @@ export async function voidTransaction(
   return callAppsScriptResilient<
     TransactionVoidResult,
     { bu: string; tx_id: string; reason?: string; _actor_role: string; _actor_email: string }
-  >('transaction.void', { bu: buName, tx_id: txId, reason, ...actor }, { user: actor._actor_email });
+  >('transaction.void', { bu: buName, tx_id: txId, reason, ...actor }, { user: actor._actor_username });
 }
 
 /**
@@ -180,14 +180,13 @@ export async function batchOutbound(
   if (!payload.bu) throw new Error('bu wajib');
   if (!payload.no_sj) throw new Error('no_sj wajib');
   if (!payload.customer) throw new Error('customer wajib');
-  if (!payload.items || payload.items.length === 0) {
-    throw new Error('items wajib (min 1)');
-  }
+  if (!payload.items || payload.items.length === 0) throw new Error('items minimal 1');
+
   const actor = getActorContext();
   return callAppsScriptResilient<BatchOutboundResult, BatchOutboundPayload>(
     'transaction.batchOutbound',
-    { ...payload, ...actor } as BatchOutboundPayload,
-    { user: actor._actor_email },
+    { ...payload, ...actor },
+    { user: actor._actor_username },
   );
 }
 

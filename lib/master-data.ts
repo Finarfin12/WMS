@@ -125,7 +125,7 @@ export async function saveMasterData(
   return callAppsScriptResilient<MasterDataSaveResult, MasterDataSavePayload>(
     'masterData.save',
     { ...payload, ...actor } as MasterDataSavePayload,
-    { user: actor._actor_email },
+    { user: actor._actor_username },
   );
 }
 
@@ -142,7 +142,7 @@ export async function deleteMasterData(
   return callAppsScriptResilient<
     MasterDataDeleteResult,
     { bu: string; id: string; _actor_role: string; _actor_email: string }
-  >('masterData.delete', { bu: buName, id, ...actor }, { user: actor._actor_email });
+  >('masterData.delete', { bu: buName, id, ...actor }, { user: actor._actor_username });
 }
 
 /**

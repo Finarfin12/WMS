@@ -201,10 +201,11 @@ export function getCurrentUser(): CurrentUser | null {
  * Convenience: actor identity untuk inject ke RPC payload.
  * Backend handler validate role-nya untuk authorization.
  */
-export function getActorContext(): { _actor_role: UserRole; _actor_email: string } {
+export function getActorContext(): { _actor_role: UserRole; _actor_email: string; _actor_username: string } {
   const u = getCurrentUser();
   return {
     _actor_role: u?.role || 'User',
     _actor_email: u?.email || '',
+    _actor_username: u?.username || u?.email?.split('@')[0] || '',
   };
 }
