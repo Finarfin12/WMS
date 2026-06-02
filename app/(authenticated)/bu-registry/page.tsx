@@ -11,7 +11,7 @@ import {
   X,
   FloppyDisk,
 } from '@phosphor-icons/react';
-import { listBus, saveBu, type BUConfig, type CreateBuPayload } from '@/lib/bu-registry';
+import { listBus, saveBu, uploadBuLogo, type BUConfig, type CreateBuPayload } from '@/lib/bu-registry';
 import { RadialLoading } from '@/lib/RadialLoading';
 import { alertError, toast, withLoading } from '@/lib/swal';
 
@@ -245,6 +245,48 @@ export default function BuRegistryPage() {
                       required
                     />
                   </div>
+
+                  {editingId && (
+                    <div className="form-group border-t border-[var(--border)] pt-4 mt-2">
+                      <label>Logo Surat Jalan (Opsional)</label>
+                      <input
+                        type="file"
+                        accept="image/png, image/jpeg, image/jpg"
+                        className="form-control text-sm mt-1"
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          if (file.size > 1024 * 1024) {
+                            toast('Ukuran file maksimal 1MB', 'error');
+                            e.target.value = '';
+                            return;
+                          }
+                          const reader = new FileReader();
+                          reader.onload = async (ev) => {
+                            const base64 = (ev.target?.result as string).split(',')[1];
+                            try {
+                              await withLoading(
+                                () => uploadBuLogo({
+                                  bu_id: form.bu_id,
+                                  filename: file.name,
+                                  mime_type: file.type,
+                                  data_base64: base64
+                                }),
+                                { loadingText: 'Mengunggah logo...' }
+                              );
+                              toast('Logo berhasil diunggah', 'success');
+                            } catch (err) {
+                              alertError(err, 'Gagal mengunggah logo');
+                            }
+                          };
+                          reader.readAsDataURL(file);
+                        }}
+                      />
+                      <small className="text-muted block mt-1">
+                        Akan tampil di pojok kiri atas form Surat Jalan PDF. Maksimal 1MB (PNG/JPG).
+                      </small>
+                    </div>
+                  )}
 
                   <div className="form-group">
                     <label>Tipe BU</label>
