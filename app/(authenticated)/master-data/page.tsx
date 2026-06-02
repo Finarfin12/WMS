@@ -384,7 +384,7 @@ export default function MasterDataPage() {
                           )}
                         </td>
                         <td className="text-center">
-                          <span className="text-xs px-2 py-1 rounded bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 font-semibold">
+                          <span className="text-xs px-2 py-1 rounded bg-[var(--primary)] text-white font-semibold shadow-sm">
                             {grp.batches.length}
                           </span>
                         </td>
