@@ -172,7 +172,10 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       {/* Sidebar */}
       <aside className={cn('sidebar', sidebarCollapsed && 'collapsed')}>
         {/* Sidebar Header (Floating Card Design) */}
-        <div className="m-4 p-3 bg-white rounded-xl shadow-md flex items-center justify-between transition-all">
+        <div className={cn(
+          "bg-white rounded-xl shadow-md flex items-center transition-all",
+          sidebarCollapsed ? "m-3 p-2 justify-center" : "m-4 p-3 justify-between"
+        )}>
           {!sidebarCollapsed && (
             <div className="flex items-center gap-3 sidebar-label overflow-hidden">
               {sysConfig?.system_logo_url ? (
