@@ -24,6 +24,7 @@ import {
   ClockCounterClockwise,
   Clock,
   ChartLine,
+  ChartPieSlice,
   Users as UsersIcon,
   Upload,
   Gear,
