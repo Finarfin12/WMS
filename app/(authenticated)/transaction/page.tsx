@@ -12,7 +12,7 @@
  */
 
 import { useEffect, useState, useCallback } from 'react';
-import { Receipt, Plus, ArrowsClockwise, ArrowDown, ArrowUp, ListBullets, Warning } from '@phosphor-icons/react';
+import { Receipt, Plus, ArrowsClockwise, ArrowDown, ArrowUp, ListBullets, Warning, X } from '@phosphor-icons/react';
 import { saveTransaction, batchOutbound } from '@/lib/transaction';
 import { searchHistory, type HistoryItem } from '@/lib/history';
 import { listBus, getBuFlags, type BUConfig } from '@/lib/bu-registry';
@@ -24,7 +24,6 @@ import { formatDateDmy, parseHargaID, formatHargaDisplay } from '@/lib/utils';
 import Link from 'next/link';
 import ModalMasterData from '@/components/ModalMasterData';
 
-type Tab = 'masuk' | 'keluar' | 'list';
 
 interface OutboundRowInput {
   checked: boolean;
@@ -36,7 +35,7 @@ interface OutboundRowInput {
 
 export default function TransactionPage() {
   const [bu, setBu] = useState('');
-  const [activeTab, setActiveTab] = useState<Tab>('masuk');
+  const [txModalType, setTxModalType] = useState<'masuk' | 'keluar' | null>(null);
   const [buConfig, setBuConfig] = useState<BUConfig | null>(null);
   const [recent, setRecent] = useState<HistoryItem[]>([]);
   const [loadingList, setLoadingList] = useState(false);
@@ -247,10 +246,10 @@ export default function TransactionPage() {
   }, [bu]);
 
   useEffect(() => {
-    if (bu && activeTab === 'keluar') {
+    if (bu && txModalType === 'keluar') {
       loadStock();
     }
-  }, [bu, activeTab, loadStock]);
+  }, [bu, txModalType, loadStock]);
 
   // === UI-1: Cascading Atrione ===
   // Material berubah → fetch ukuran
@@ -330,8 +329,8 @@ export default function TransactionPage() {
   }, [bu]);
 
   useEffect(() => {
-    if (activeTab === 'list') loadRecent();
-  }, [activeTab, loadRecent]);
+    if (bu) loadRecent();
+  }, [bu, loadRecent]);
 
   // Unique keys for stock item checklist
   const getStockItemKey = useCallback((item: StockItem, buId: string) => {
@@ -544,6 +543,8 @@ export default function TransactionPage() {
       } else {
         toast(`Backend down — transaksi masuk antrian (id: ${result.queue_id})`, 'warning');
       }
+      setTxModalType(null);
+      loadRecent();
 
       // Reset
       setHeader({
@@ -593,32 +594,18 @@ export default function TransactionPage() {
           <Receipt size={32} weight="fill" className="text-primary" />
           Transaksi {bu}
         </h1>
-      </div>
-
-      {/* Sub-tabs */}
-      <div className="flex gap-2 mb-6 border-b border-[var(--border)]">
-        {[
-          { id: 'masuk' as const, label: 'Barang Masuk', icon: ArrowDown, color: 'text-success' },
-          { id: 'keluar' as const, label: 'Barang Keluar', icon: ArrowUp, color: 'text-danger' },
-          { id: 'list' as const, label: 'List Terkini', icon: ListBullets, color: 'text-primary' },
-        ].map(({ id, label, icon: Icon, color }) => (
-          <button
-            key={id}
-            type="button"
-            onClick={() => setActiveTab(id)}
-            className={`px-4 py-2 font-semibold flex items-center gap-2 border-b-2 transition ${
-              activeTab === id
-                ? `border-[var(--primary)] ${color}`
-                : 'border-transparent text-muted hover:text-primary'
-            }`}
-          >
-            <Icon size={18} weight="bold" />
-            {label}
+        <div className="flex gap-3">
+          <button type="button" onClick={() => setTxModalType('masuk')} className="btn btn-primary bg-success hover:bg-green-700 border-none">
+            <ArrowDown size={18} weight="bold" /> Barang Masuk
           </button>
-        ))}
+          <button type="button" onClick={() => setTxModalType('keluar')} className="btn btn-primary bg-danger hover:bg-red-700 border-none">
+            <ArrowUp size={18} weight="bold" /> Barang Keluar
+          </button>
+        </div>
       </div>
 
-      {activeTab === 'list' ? (
+      {(
+
         <div className="card">
           <div className="flex justify-between items-center mb-4">
             <h3 className="card-title m-0">50 Transaksi Terakhir (30 hari)</h3>
@@ -666,7 +653,24 @@ export default function TransactionPage() {
             </div>
           )}
         </div>
-      ) : activeTab === 'masuk' ? (
+      )}
+
+      {txModalType && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[8000] flex items-center justify-center p-4">
+          <div className="bg-[var(--surface)] rounded-2xl p-6 w-full max-w-6xl max-h-[90vh] overflow-y-auto shadow-xl relative">
+            <button
+              type="button"
+              onClick={() => setTxModalType(null)}
+              className="absolute top-4 right-4 text-muted hover:text-danger p-1"
+            >
+              <X size={24} weight="bold" />
+            </button>
+            <div className="mb-6 flex gap-4 border-b border-[var(--border)]">
+              <button type="button" onClick={() => setTxModalType('masuk')} className={`px-4 py-2 font-semibold border-b-2 ${txModalType === 'masuk' ? 'border-success text-success' : 'border-transparent text-muted hover:text-success'}`}>Barang Masuk</button>
+              <button type="button" onClick={() => setTxModalType('keluar')} className={`px-4 py-2 font-semibold border-b-2 ${txModalType === 'keluar' ? 'border-danger text-danger' : 'border-transparent text-muted hover:text-danger'}`}>Barang Keluar</button>
+            </div>
+            
+            {txModalType === 'masuk' ? (
         // === BARANG MASUK TAB ===
         <form onSubmit={handleSubmitMasuk} className="card max-w-3xl">
           <h3 className="card-title">Form Barang Masuk</h3>
@@ -1146,6 +1150,9 @@ export default function TransactionPage() {
             </button>
           </div>
         </form>
+      )}
+          </div>
+        </div>
       )}
 
       {/* === UI-4: Modal Pakta Integritas === */}
