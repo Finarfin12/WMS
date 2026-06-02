@@ -54,15 +54,20 @@ export function ContextMenu({ x, y, options, onClose }: ContextMenuProps) {
   return (
     <div
       ref={menuRef}
-      className="fixed z-[9999] w-48 bg-card border border-border shadow-xl rounded-md py-1 overflow-hidden"
+      className="fixed z-[9999] w-56 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-2xl rounded-xl py-2 overflow-hidden ring-1 ring-black/5"
       style={style}
       onClick={(e) => e.stopPropagation()}
     >
+      <div className="px-4 py-2 mb-1 border-b border-slate-100 dark:border-slate-800">
+        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Aksi Cepat</p>
+      </div>
       {options.map((opt, i) => (
         <button
           key={i}
-          className={`w-full text-left px-4 py-2 text-sm flex items-center gap-2 hover:bg-slate-800 transition-colors ${
-            opt.danger ? 'text-red-400 hover:text-red-300' : 'text-slate-300 hover:text-white'
+          className={`w-full text-left px-4 py-2.5 text-sm font-medium flex items-center gap-3 transition-colors ${
+            opt.danger 
+              ? 'text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20' 
+              : 'text-slate-700 dark:text-slate-200 hover:bg-blue-50 dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-blue-400'
           }`}
           onClick={(e) => {
             e.stopPropagation();

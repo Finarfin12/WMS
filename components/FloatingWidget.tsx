@@ -104,46 +104,50 @@ export function FloatingWidget() {
 
   if (!isOpen) {
     return (
-      <button
-        onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 p-4 rounded-full bg-primary text-white shadow-xl hover:bg-primary-hover hover:scale-110 transition-all z-[9999]"
-      >
-        <Calculator size={24} weight="fill" />
-      </button>
+      <div className="fixed bottom-6 right-6 z-[9999] group">
+        <span className="absolute inset-0 rounded-full bg-primary/40 animate-ping"></span>
+        <button
+          onClick={() => setIsOpen(true)}
+          className="relative p-4 rounded-full bg-primary text-white shadow-[0_8px_30px_rgb(0,0,0,0.2)] hover:bg-primary-hover hover:scale-110 transition-transform"
+          title="Buka Kalkulator & Cek Stok"
+        >
+          <Calculator size={28} weight="duotone" />
+        </button>
+      </div>
     );
   }
 
   return (
     <div
-      className="fixed z-[9999] w-80 bg-[var(--card-bg)] border border-[var(--border)] rounded-xl shadow-2xl overflow-hidden flex flex-col transition-shadow"
+      className="fixed z-[9999] w-80 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-2xl rounded-xl overflow-hidden flex flex-col transition-shadow ring-1 ring-black/5"
       style={{ left: position.x, top: position.y, height: 450 }}
     >
       {/* Header / Drag Handle */}
       <div 
-        className="bg-slate-800 p-3 flex justify-between items-center cursor-move"
+        className="bg-slate-100 dark:bg-slate-800 p-3 flex justify-between items-center cursor-move border-b border-slate-200 dark:border-slate-700"
         onMouseDown={handleDragStart}
       >
         <div className="flex gap-2 font-semibold text-sm">
           <button 
-            className={`px-2 py-1 rounded ${activeTab === 'calc' ? 'bg-primary text-white' : 'text-slate-400 hover:text-white'}`}
+            className={`px-3 py-1.5 rounded-md transition-colors ${activeTab === 'calc' ? 'bg-primary text-white shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white'}`}
             onClick={() => setActiveTab('calc')}
           >
-            <Calculator size={16} className="inline mr-1"/> Calc
+            <Calculator size={16} className="inline mr-1" weight="duotone" /> Calc
           </button>
           <button 
-            className={`px-2 py-1 rounded ${activeTab === 'stock' ? 'bg-primary text-white' : 'text-slate-400 hover:text-white'}`}
+            className={`px-3 py-1.5 rounded-md transition-colors ${activeTab === 'stock' ? 'bg-primary text-white shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white'}`}
             onClick={() => setActiveTab('stock')}
           >
-            <Package size={16} className="inline mr-1"/> Stock
+            <Package size={16} className="inline mr-1" weight="duotone" /> Stock
           </button>
         </div>
-        <button onClick={() => setIsOpen(false)} className="text-slate-400 hover:text-white">
-          <CaretUp size={20} weight="bold" className="rotate-180" />
+        <button onClick={() => setIsOpen(false)} className="text-slate-400 hover:text-red-500 transition-colors p-1 rounded-md hover:bg-slate-200 dark:hover:bg-slate-700">
+          <X size={20} weight="bold" />
         </button>
       </div>
 
       {/* Content */}
-      <div className="p-4 flex-1 overflow-y-auto">
+      <div className="p-4 flex-1 overflow-y-auto bg-slate-50 dark:bg-slate-900/50">
         {activeTab === 'calc' ? (
           <div className="flex flex-col h-full">
             <input 
@@ -151,7 +155,7 @@ export function FloatingWidget() {
               value={calcInput}
               onChange={(e) => setCalcInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleCalculate()}
-              className="w-full text-right text-2xl p-3 bg-slate-900 border border-slate-700 rounded mb-4"
+              className="w-full text-right text-3xl font-light p-4 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg mb-4 shadow-inner text-slate-800 dark:text-slate-100"
               placeholder="0"
             />
             <div className="grid grid-cols-4 gap-2 flex-1">
@@ -162,13 +166,19 @@ export function FloatingWidget() {
                     if (btn === 'C') setCalcInput('');
                     else setCalcInput(prev => prev === 'Error' ? btn : prev + btn);
                   }}
-                  className="bg-slate-800 hover:bg-slate-700 rounded text-lg font-mono font-bold"
+                  className={`rounded-lg text-lg font-mono font-semibold transition-transform active:scale-95 ${
+                    ['/','*','-','+'].includes(btn) 
+                      ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-800/60'
+                      : btn === 'C'
+                      ? 'bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-800/60'
+                      : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700'
+                  }`}
                 >
                   {btn}
                 </button>
               ))}
               <button 
-                className="col-span-4 bg-primary hover:bg-primary-hover text-white rounded py-2 font-bold mt-2"
+                className="col-span-4 bg-primary hover:bg-primary-hover text-white rounded-lg py-3 font-bold mt-2 shadow-md active:scale-[0.98] transition-transform"
                 onClick={handleCalculate}
               >
                 =
