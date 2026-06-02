@@ -224,14 +224,25 @@ export function FloatingWidget() {
         ) : (
           <div className="flex flex-col h-full">
             <div className="flex gap-2 mb-4">
-              <input 
-                type="text"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && searchStock()}
-                placeholder="Cari barang..."
-                className="form-control flex-1 text-sm"
-              />
+              <div className="relative flex-1">
+                <input 
+                  type="text"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && searchStock()}
+                  placeholder="Cari barang..."
+                  className="form-control w-full text-sm pr-8"
+                />
+                {search && (
+                  <button 
+                    onClick={() => { setSearch(''); setStockResult(null); }}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                    title="Bersihkan Pencarian"
+                  >
+                    <X size={14} weight="bold" />
+                  </button>
+                )}
+              </div>
               <button onClick={searchStock} className="btn btn-primary px-3">
                 <MagnifyingGlass size={16} />
               </button>
