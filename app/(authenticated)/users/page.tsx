@@ -124,10 +124,10 @@ export default function UsersPage() {
     if (result) load();
   }
 
-  async function handleResetPassword(email: string) {
+  async function handleResetSession(email: string) {
     const ok = await confirm(
-      `Reset password ${email}?`,
-      'Sistem akan generate password baru. Berikan ke user lewat channel aman.',
+      `Reset session untuk ${email}?`,
+      'Sistem akan menghasilkan kode sesi baru. Berikan ke user lewat channel aman.',
       { type: 'warning', confirmText: 'Reset' },
     );
     if (!ok) return;
@@ -265,9 +265,9 @@ export default function UsersPage() {
                         )}
                         <button
                           type="button"
-                          onClick={() => handleResetPassword(u.Email)}
+                          onClick={() => handleResetSession(u.Email)}
                           className="text-info hover:text-cyan-700 p-1"
-                          title="Reset Password"
+                          title="Reset Session"
                         >
                           <Key size={18} weight="bold" />
                         </button>
