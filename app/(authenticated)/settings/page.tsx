@@ -22,8 +22,68 @@ export default function SettingsPage() {
     setCheckingHealth(true);
     try {
       const res = await verifyIntegrity();
+      
+      let htmlContent = '';
+      if (res.databases && res.databases.length > 0) {
+        htmlContent = '<div style="text-align: left; font-size: 13px; max-height: 60vh; overflow-y: auto;">';
+        res.databases.forEach(db => {
+          const isError = !!db.error;
+          const statusText = isError ? 'ERROR' : 'TERHUBUNG';
+          const statusColor = isError ? 'red' : '#16a34a';
+          
+          let roleName = db.role;
+          if (db.role === 'main') roleName = 'Database Utama (Main)';
+          else if (db.role === 'archive1') roleName = 'Archive 1 (Bulan 4-6)';
+          else if (db.role === 'archive2') roleName = 'Archive 2 (Bulan 7-9)';
+          else if (db.role === 'archive3') roleName = 'Archive 3 (Bulan 10-12)';
+          else if (db.role === 'grand') roleName = 'Grand Archive';
+
+          htmlContent += `
+            <div style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; margin-bottom: 12px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <strong style="color: var(--primary); font-size: 14px;">${roleName}</strong>
+                <span style="color: ${statusColor}; font-weight: bold; font-size: 11px;">${statusText}</span>
+              </div>
+          `;
+          
+          if (isError) {
+             htmlContent += `<div style="color: red;">${db.error}</div>`;
+          } else {
+             htmlContent += `<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">`;
+             const allSheets = [
+               ...db.ok.map(s => ({s, ok: true})), 
+               ...db.missing.map(s => ({s, ok: false}))
+             ];
+             allSheets.forEach(item => {
+               const color = item.ok ? '#16a34a' : 'red';
+               const text = item.ok ? 'OK' : 'MISSING';
+               htmlContent += `
+                 <div style="display: flex; justify-content: space-between; border-left: 2px solid ${color}; padding-left: 6px;">
+                   <span>${item.s}</span>
+                   <span style="color: ${color}; font-size: 11px;">${text}</span>
+                 </div>
+               `;
+             });
+             htmlContent += `</div>`;
+          }
+          
+          htmlContent += `</div>`;
+        });
+        htmlContent += '</div>';
+      }
+
       if (res.ok) {
-        toast(`System Sehat! (${res.summary.ok_count} sheet tervalidasi)`, 'success');
+        if (htmlContent) {
+          Swal.fire({
+            title: 'System Health Check',
+            html: htmlContent,
+            width: '600px',
+            confirmButtonColor: 'var(--primary)',
+            confirmButtonText: 'Tutup'
+          });
+        } else {
+          toast(`System Sehat! (${res.summary.ok_count} sheet tervalidasi)`, 'success');
+        }
       } else {
         const errorList = [
           ...res.missing_sheets.map(s => `Missing: ${s}`),
@@ -33,7 +93,8 @@ export default function SettingsPage() {
         Swal.fire({
           icon: 'warning',
           title: 'Perhatian: Ada Skema yang Tidak Sesuai',
-          text: errorList || res.reason || 'Terjadi ketidaksesuaian struktur database.',
+          html: htmlContent || `<pre style="text-align:left; font-size:12px;">${errorList || res.reason || 'Terjadi ketidaksesuaian struktur database.'}</pre>`,
+          width: '600px',
           confirmButtonColor: 'var(--primary)',
         });
       }

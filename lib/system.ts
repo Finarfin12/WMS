@@ -37,6 +37,16 @@ export async function reconcileStock(buName?: string): Promise<ReconcileResult> 
 // Verify Integrity
 // ============================================================================
 
+export interface DbVerifyReport {
+  role: string;
+  id: string;
+  name: string;
+  ok: string[];
+  missing: string[];
+  headerMismatch: Array<{ sheet: string; missing?: string[]; reason?: string }>;
+  error?: string;
+}
+
 export interface VerifyIntegrityResult {
   ok: boolean;
   reason?: string;
@@ -46,6 +56,7 @@ export interface VerifyIntegrityResult {
     missing_count: number;
     header_mismatch_count: number;
   };
+  databases?: DbVerifyReport[];
   ok_sheets: string[];
   missing_sheets: string[];
   header_mismatches: Array<{ sheet: string; missing?: string[]; reason?: string }>;
