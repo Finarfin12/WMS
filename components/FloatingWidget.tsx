@@ -245,11 +245,11 @@ export function FloatingWidget() {
               ) : (
                 <div className="space-y-2">
                   {stockResult?.items.map((item, i) => (
-                    <div key={i} className="p-2 border border-slate-800 rounded bg-slate-900 text-sm">
-                      <div className="font-semibold">{item.nama}</div>
-                      <div className="flex justify-between mt-1 text-slate-400 text-xs">
+                    <div key={i} className="p-3 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-sm shadow-sm">
+                      <div className="font-semibold text-slate-800 dark:text-slate-100">{item.nama}</div>
+                      <div className="flex justify-between items-center mt-2 text-slate-500 dark:text-slate-400 text-xs">
                         <span>{[item.warna, item.ukuran, item.lebar].filter(Boolean).join(' / ')}</span>
-                        <span className="font-bold text-white bg-slate-700 px-1.5 rounded">{item.stok}</span>
+                        <span className="font-bold text-slate-100 bg-slate-600 dark:text-white dark:bg-slate-700 px-2 py-0.5 rounded">{item.stok}</span>
                       </div>
                     </div>
                   ))}
