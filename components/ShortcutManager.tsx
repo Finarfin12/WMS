@@ -23,6 +23,18 @@ export function ShortcutManager() {
         }
       }
 
+      // Ctrl + S for Save
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+        e.preventDefault();
+        window.dispatchEvent(new CustomEvent('shortcut-save'));
+      }
+
+      // Ctrl + K for Global Search
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        window.dispatchEvent(new CustomEvent('focus-search'));
+      }
+
       // Ctrl + / or Cmd + / for showing shortcut modal
       if ((e.ctrlKey || e.metaKey) && e.key === '/') {
         e.preventDefault();
@@ -43,42 +55,78 @@ export function ShortcutManager() {
 
   if (!showModal) return null;
 
+  const Kbd = ({ children }: { children: React.ReactNode }) => (
+    <kbd className="px-2.5 py-1.5 bg-slate-200 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md text-sm font-mono font-bold text-slate-800 dark:text-slate-100 shadow-sm">
+      {children}
+    </kbd>
+  );
+
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[9999] flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-slate-900 rounded-xl max-w-md w-full shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
-        <div className="flex justify-between items-center p-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900">
-          <h2 className="text-lg font-bold flex items-center gap-2">
-            <Keyboard size={24} weight="duotone" className="text-primary" />
-            Panduan Pintasan (Shortcuts)
+      <div className="bg-white dark:bg-slate-900 rounded-2xl max-w-2xl w-full shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-slate-200 dark:border-slate-800 overflow-hidden transform transition-all">
+        <div className="flex justify-between items-center p-5 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
+          <h2 className="text-xl font-extrabold flex items-center gap-3 text-slate-800 dark:text-white">
+            <Keyboard size={28} weight="duotone" className="text-primary" />
+            Panduan Pintasan Pintar
           </h2>
           <button
             onClick={() => setShowModal(false)}
-            className="text-slate-400 hover:text-red-500 transition-colors p-1 rounded-md hover:bg-slate-200 dark:hover:bg-slate-800"
+            className="text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors p-1.5 rounded-lg"
           >
-            <X size={20} weight="bold" />
+            <X size={24} weight="bold" />
           </button>
         </div>
-        <div className="p-6">
-          <ul className="space-y-4">
-            <li className="flex justify-between items-center">
-              <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Buka Panduan Ini</span>
-              <kbd className="px-2 py-1 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-xs font-mono font-bold">Ctrl + /</kbd>
-            </li>
-            <li className="flex justify-between items-center">
-              <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Pilih BU Tab Ke-1 (Kiri)</span>
-              <kbd className="px-2 py-1 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-xs font-mono font-bold">Alt + 1</kbd>
-            </li>
-            <li className="flex justify-between items-center">
-              <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Pilih BU Tab Ke-2 (Tengah)</span>
-              <kbd className="px-2 py-1 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-xs font-mono font-bold">Alt + 2</kbd>
-            </li>
-            <li className="flex justify-between items-center">
-              <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Pilih BU Tab Ke-3 (Kanan)</span>
-              <kbd className="px-2 py-1 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-xs font-mono font-bold">Alt + 3</kbd>
-            </li>
-          </ul>
-          <div className="mt-6 p-3 bg-blue-50 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300 text-xs rounded-lg border border-blue-100 dark:border-blue-900/50">
-            <p><strong>Tips:</strong> Pintasan tidak akan berfungsi jika kursor Anda sedang aktif mengetik di dalam kolom input atau catatan.</p>
+        
+        <div className="p-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {/* Kolom 1: Navigasi */}
+            <div>
+              <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4 border-b border-slate-100 dark:border-slate-800 pb-2">Navigasi Utama</h3>
+              <ul className="space-y-4">
+                <li className="flex justify-between items-center group">
+                  <span className="text-base font-medium text-slate-700 dark:text-slate-300 group-hover:text-primary transition-colors">Pilih BU Tab Ke-1 (Kiri)</span>
+                  <Kbd>Alt + 1</Kbd>
+                </li>
+                <li className="flex justify-between items-center group">
+                  <span className="text-base font-medium text-slate-700 dark:text-slate-300 group-hover:text-primary transition-colors">Pilih BU Tab Ke-2 (Tengah)</span>
+                  <Kbd>Alt + 2</Kbd>
+                </li>
+                <li className="flex justify-between items-center group">
+                  <span className="text-base font-medium text-slate-700 dark:text-slate-300 group-hover:text-primary transition-colors">Pilih BU Tab Ke-3 (Kanan)</span>
+                  <Kbd>Alt + 3</Kbd>
+                </li>
+                <li className="flex justify-between items-center group">
+                  <span className="text-base font-medium text-slate-700 dark:text-slate-300 group-hover:text-primary transition-colors">Buka Panduan Ini</span>
+                  <Kbd>Ctrl + /</Kbd>
+                </li>
+              </ul>
+            </div>
+
+            {/* Kolom 2: Aksi Cepat */}
+            <div>
+              <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4 border-b border-slate-100 dark:border-slate-800 pb-2">Aksi Cepat</h3>
+              <ul className="space-y-4">
+                <li className="flex justify-between items-center group">
+                  <span className="text-base font-medium text-slate-700 dark:text-slate-300 group-hover:text-primary transition-colors">Simpan Form/Transaksi</span>
+                  <Kbd>Ctrl + S</Kbd>
+                </li>
+                <li className="flex justify-between items-center group">
+                  <span className="text-base font-medium text-slate-700 dark:text-slate-300 group-hover:text-primary transition-colors">Fokus Pencarian</span>
+                  <Kbd>Ctrl + K</Kbd>
+                </li>
+                <li className="flex justify-between items-center group">
+                  <span className="text-base font-medium text-slate-700 dark:text-slate-300 group-hover:text-primary transition-colors">Tutup Pop-up / Batal</span>
+                  <Kbd>Esc</Kbd>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="mt-8 p-4 bg-primary/10 border border-primary/20 rounded-xl flex items-start gap-3">
+            <div className="text-primary mt-0.5">💡</div>
+            <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
+              <strong>Tips Pro:</strong> Menggunakan pintasan *keyboard* dapat mempercepat pekerjaanmu hingga 3x lipat dibandingkan menggunakan *mouse*. Pintasan akan dinonaktifkan sementara ketika kamu sedang mengetik teks di dalam kotak isian.
+            </p>
           </div>
         </div>
       </div>
