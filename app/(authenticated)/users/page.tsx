@@ -36,9 +36,7 @@ export default function UsersPage() {
   const [editingEmail, setEditingEmail] = useState<string | null>(null);
   const [showInactive, setShowInactive] = useState(false);
 
-  const [form, setForm] = useState({
     email: '',
-    password: '',
     role: 'User' as UserRole,
     username: '',
     is_active: true,
@@ -62,7 +60,7 @@ export default function UsersPage() {
 
   function openNew() {
     setEditingEmail(null);
-    setForm({ email: '', password: '', role: 'User', username: '', is_active: true });
+    setForm({ email: '', role: 'User', username: '', is_active: true });
     setShowForm(true);
   }
 
@@ -70,7 +68,6 @@ export default function UsersPage() {
     setEditingEmail(user.Email);
     setForm({
       email: user.Email,
-      password: '',
       role: user.Role,
       username: user.Username,
       is_active: user.is_active,
@@ -84,20 +81,10 @@ export default function UsersPage() {
       toast('Email format invalid', 'error');
       return;
     }
-    if (!editingEmail && !form.password) {
-      toast('Password wajib untuk user baru', 'error');
-      return;
-    }
-    if (form.password && form.password.length < 8) {
-      toast('Password minimal 8 karakter', 'error');
-      return;
-    }
-
     const result = await withLoading(
       () =>
         saveUser({
           email: form.email,
-          password: form.password || undefined,
           role: form.role,
           username: form.username || undefined,
           is_active: form.is_active,
@@ -145,15 +132,14 @@ export default function UsersPage() {
     if (!ok) return;
 
     const result = await withLoading(() => resetUserPassword(email), {
-      loadingText: 'Generate password baru…',
+      loadingText: 'Generate token baru…',
       silent: false,
     });
 
     if (result) {
-      // Show password sekali
       await showAlert(
-        'Password baru:',
-        `${result.temp_password}\n\n${result.note}`,
+        'Berhasil Reset',
+        'Sesi login user telah direset dan harus login ulang via OTP.',
         'success',
       );
     }
@@ -344,16 +330,6 @@ export default function UsersPage() {
                   value={form.username}
                   onChange={(e) => setForm({ ...form, username: e.target.value })}
                 />
-              </div>
-              <div className="form-group">
-                <label>{editingEmail ? 'Password Baru (kosongkan kalau tidak ingin ubah)' : 'Password'}</label>
-                <input
-                  type="password"
-                  className="form-control"
-                  value={form.password}
-                  onChange={(e) => setForm({ ...form, password: e.target.value })}
-                  placeholder="Min 8 karakter"
-                  required={!editingEmail}
                 />
               </div>
               <div className="form-group">
