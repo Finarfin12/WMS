@@ -1167,7 +1167,7 @@ export default function TransactionPage() {
               Saya menyatakan bahwa jumlah barang yang dikeluarkan sudah sesuai dengan instruksi kerja dan data fisik di gudang. Segala manipulasi data akan ditindak sesuai aturan perusahaan.
             </p>
             
-            <div className="flex items-start gap-3 mb-6 bg-slate-50 dark:bg-slate-900 p-4 rounded-lg">
+            <div className="flex items-start gap-3 mb-6 bg-[var(--bg-color)] p-4 rounded-lg border border-[var(--border)]">
               <input
                 id="pakta-check"
                 type="checkbox"
