@@ -54,6 +54,7 @@ export type AppsScriptAction =
   | 'masterData.options'
   // Dashboard, History, Reports (Phase 4)
   | 'dashboard.live'
+  | 'dashboard.globalSummary'
   | 'history.search'
   | 'history.rekap'
   | 'reports.profit'
