@@ -1,0 +1,218 @@
+'use client';
+
+import { useState, useEffect, useRef } from 'react';
+import { Calculator, Package, X, CaretUp, MagnifyingGlass, ArrowsClockwise } from '@phosphor-icons/react';
+import { getStock, type StockGetResult } from '@/lib/stock';
+
+export function FloatingWidget() {
+  const [isOpen, setIsOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<'calc' | 'stock'>('calc');
+  const [position, setPosition] = useState({ x: -1, y: -1 });
+  const [isDragging, setIsDragging] = useState(false);
+  const dragRef = useRef<{ startX: number; startY: number; initX: number; initY: number }>({
+    startX: 0, startY: 0, initX: 0, initY: 0
+  });
+
+  // Calculator state
+  const [calcInput, setCalcInput] = useState('');
+  
+  // Stock state
+  const [bu, setBu] = useState('');
+  const [search, setSearch] = useState('');
+  const [stockResult, setStockResult] = useState<StockGetResult | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const initial = localStorage.getItem('wms_active_bu') || '';
+    setBu(initial);
+    const handler = (e: Event) => setBu((e as CustomEvent<string>).detail);
+    window.addEventListener('bu-changed', handler);
+    return () => window.removeEventListener('bu-changed', handler);
+  }, []);
+
+  // Initialize position to bottom right corner once on client
+  useEffect(() => {
+    setPosition({ x: window.innerWidth - 320 - 24, y: window.innerHeight - 450 - 24 });
+  }, []);
+
+  useEffect(() => {
+    function handleMouseMove(e: MouseEvent) {
+      if (!isDragging) return;
+      const dx = e.clientX - dragRef.current.startX;
+      const dy = e.clientY - dragRef.current.startY;
+      let newX = dragRef.current.initX + dx;
+      let newY = dragRef.current.initY + dy;
+      
+      // Keep within bounds
+      if (newX < 0) newX = 0;
+      if (newY < 0) newY = 0;
+      if (newX > window.innerWidth - 320) newX = window.innerWidth - 320;
+      if (newY > window.innerHeight - 50) newY = window.innerHeight - 50;
+
+      setPosition({ x: newX, y: newY });
+    }
+    function handleMouseUp() {
+      setIsDragging(false);
+    }
+    if (isDragging) {
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mouseup', handleMouseUp);
+    }
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isDragging]);
+
+  const handleDragStart = (e: React.MouseEvent) => {
+    if ((e.target as HTMLElement).tagName === 'BUTTON' || (e.target as HTMLElement).tagName === 'INPUT') return;
+    setIsDragging(true);
+    dragRef.current = {
+      startX: e.clientX,
+      startY: e.clientY,
+      initX: position.x,
+      initY: position.y
+    };
+  };
+
+  const handleCalculate = () => {
+    try {
+      // Very basic safe eval replacing non-math characters
+      const sanitized = calcInput.replace(/[^-()\d/*+.]/g, '');
+      // eslint-disable-next-line no-eval
+      const res = eval(sanitized);
+      setCalcInput(String(res));
+    } catch {
+      setCalcInput('Error');
+    }
+  };
+
+  const searchStock = async () => {
+    if (!bu || !search.trim()) return;
+    setLoading(true);
+    try {
+      const res = await getStock({ bu, search, limit: 10 });
+      setStockResult(res);
+    } catch (err) {
+      // Ignore
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (position.x === -1) return null; // Wait for mount
+
+  if (!isOpen) {
+    return (
+      <button
+        onClick={() => setIsOpen(true)}
+        className="fixed bottom-6 right-6 p-4 rounded-full bg-primary text-white shadow-xl hover:bg-primary-hover hover:scale-110 transition-all z-[9999]"
+      >
+        <Calculator size={24} weight="fill" />
+      </button>
+    );
+  }
+
+  return (
+    <div
+      className="fixed z-[9999] w-80 bg-[var(--card-bg)] border border-[var(--border)] rounded-xl shadow-2xl overflow-hidden flex flex-col transition-shadow"
+      style={{ left: position.x, top: position.y, height: 450 }}
+    >
+      {/* Header / Drag Handle */}
+      <div 
+        className="bg-slate-800 p-3 flex justify-between items-center cursor-move"
+        onMouseDown={handleDragStart}
+      >
+        <div className="flex gap-2 font-semibold text-sm">
+          <button 
+            className={`px-2 py-1 rounded ${activeTab === 'calc' ? 'bg-primary text-white' : 'text-slate-400 hover:text-white'}`}
+            onClick={() => setActiveTab('calc')}
+          >
+            <Calculator size={16} className="inline mr-1"/> Calc
+          </button>
+          <button 
+            className={`px-2 py-1 rounded ${activeTab === 'stock' ? 'bg-primary text-white' : 'text-slate-400 hover:text-white'}`}
+            onClick={() => setActiveTab('stock')}
+          >
+            <Package size={16} className="inline mr-1"/> Stock
+          </button>
+        </div>
+        <button onClick={() => setIsOpen(false)} className="text-slate-400 hover:text-white">
+          <CaretUp size={20} weight="bold" className="rotate-180" />
+        </button>
+      </div>
+
+      {/* Content */}
+      <div className="p-4 flex-1 overflow-y-auto">
+        {activeTab === 'calc' ? (
+          <div className="flex flex-col h-full">
+            <input 
+              type="text" 
+              value={calcInput}
+              onChange={(e) => setCalcInput(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleCalculate()}
+              className="w-full text-right text-2xl p-3 bg-slate-900 border border-slate-700 rounded mb-4"
+              placeholder="0"
+            />
+            <div className="grid grid-cols-4 gap-2 flex-1">
+              {['7','8','9','/','4','5','6','*','1','2','3','-','C','0','.','+'].map((btn) => (
+                <button
+                  key={btn}
+                  onClick={() => {
+                    if (btn === 'C') setCalcInput('');
+                    else setCalcInput(prev => prev === 'Error' ? btn : prev + btn);
+                  }}
+                  className="bg-slate-800 hover:bg-slate-700 rounded text-lg font-mono font-bold"
+                >
+                  {btn}
+                </button>
+              ))}
+              <button 
+                className="col-span-4 bg-primary hover:bg-primary-hover text-white rounded py-2 font-bold mt-2"
+                onClick={handleCalculate}
+              >
+                =
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="flex flex-col h-full">
+            <div className="flex gap-2 mb-4">
+              <input 
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && searchStock()}
+                placeholder="Cari barang..."
+                className="form-control flex-1 text-sm"
+              />
+              <button onClick={searchStock} className="btn btn-primary px-3">
+                <MagnifyingGlass size={16} />
+              </button>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto pr-1">
+              {loading ? (
+                <div className="flex justify-center p-4"><ArrowsClockwise className="animate-spin text-primary" size={24}/></div>
+              ) : stockResult?.items.length === 0 ? (
+                <p className="text-center text-muted text-sm mt-4">Tidak ditemukan</p>
+              ) : (
+                <div className="space-y-2">
+                  {stockResult?.items.map((item, i) => (
+                    <div key={i} className="p-2 border border-slate-800 rounded bg-slate-900 text-sm">
+                      <div className="font-semibold">{item.nama}</div>
+                      <div className="flex justify-between mt-1 text-slate-400 text-xs">
+                        <span>{[item.warna, item.ukuran, item.lebar].filter(Boolean).join(' / ')}</span>
+                        <span className="font-bold text-white bg-slate-700 px-1.5 rounded">{item.stok}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

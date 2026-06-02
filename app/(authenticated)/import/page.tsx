@@ -60,6 +60,7 @@ export default function ImportPage() {
   const [rows, setRows] = useState<Record<string, unknown>[]>([]);
   const [preview, setPreview] = useState<ImportPreviewResult | null>(null);
   const [loading, setLoading] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -107,10 +108,7 @@ export default function ImportPage() {
     toast(`Template ${result.filename} ter-download`, 'success');
   }
 
-  async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
+  async function processFile(file: File) {
     const xlsx = await import('xlsx');
     const buf = await file.arrayBuffer();
     const wb = xlsx.read(buf);
@@ -119,6 +117,28 @@ export default function ImportPage() {
     setRows(parsed);
     setPreview(null);
     toast(`${parsed.length} baris dibaca dari ${file.name}`, 'info');
+  }
+
+  function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (file) processFile(file);
+  }
+
+  function handleDrop(e: React.DragEvent<HTMLDivElement>) {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file && (file.name.endsWith('.xlsx') || file.name.endsWith('.xls') || file.name.endsWith('.csv'))) {
+      processFile(file);
+      if (fileRef.current) {
+        // Create a new FileList containing just this file
+        const dt = new DataTransfer();
+        dt.items.add(file);
+        fileRef.current.files = dt.files;
+      }
+    } else {
+      toast('Format file tidak didukung, harus .xlsx atau .csv', 'warning');
+    }
   }
 
   async function handlePreview() {
@@ -250,14 +270,38 @@ export default function ImportPage() {
 
       {/* Step 2: Upload file */}
       <div className="card">
-        <h3 className="card-title">Step 2 — Upload File Excel/CSV</h3>
-        <input
-          ref={fileRef}
-          type="file"
-          accept=".xlsx,.xls,.csv"
-          onChange={handleFileUpload}
-          className="block w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-primary file:text-white file:font-semibold hover:file:bg-primary-hover file:cursor-pointer"
-        />
+        <h3 className="card-title mb-3">Step 2 — Upload File Excel/CSV</h3>
+        <div
+          onDragOver={(e) => {
+            e.preventDefault();
+            setIsDragging(true);
+          }}
+          onDragLeave={() => setIsDragging(false)}
+          onDrop={handleDrop}
+          className={`relative border-2 border-dashed rounded-xl p-8 text-center transition-all ${
+            isDragging
+              ? 'border-primary bg-primary/10 scale-[1.02]'
+              : 'border-[var(--border)] hover:border-primary/50'
+          }`}
+        >
+          <input
+            ref={fileRef}
+            type="file"
+            accept=".xlsx,.xls,.csv"
+            onChange={handleFileUpload}
+            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+            title=""
+          />
+          <div className="flex flex-col items-center gap-3 pointer-events-none">
+            <div className={`p-4 rounded-full ${isDragging ? 'bg-primary text-white' : 'bg-[var(--border)] text-muted'}`}>
+              <Upload size={32} weight="duotone" />
+            </div>
+            <div>
+              <p className="font-bold text-lg">Tarik & Lepas File di Sini</p>
+              <p className="text-sm text-muted">atau klik untuk mencari file (.xlsx, .csv)</p>
+            </div>
+          </div>
+        </div>
         {rows.length > 0 && (
           <p className="text-sm text-muted mt-3">
             ✓ {rows.length} baris terbaca dari file. Klik &ldquo;Preview&rdquo; untuk validasi.

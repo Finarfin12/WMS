@@ -10,8 +10,9 @@ import { useEffect, useState, useCallback } from 'react';
 import { MagnifyingGlass, Package, ArrowsClockwise } from '@phosphor-icons/react';
 import { getStock, type StockGetResult } from '@/lib/stock';
 import { RadialLoading } from '@/lib/RadialLoading';
-import { alertError } from '@/lib/swal';
+import { alertError, toast } from '@/lib/swal';
 import { formatCurrency } from '@/lib/utils';
+import { ContextMenu } from '@/components/ContextMenu';
 
 export default function StockPage() {
   const [bu, setBu] = useState<string>('');
@@ -19,6 +20,7 @@ export default function StockPage() {
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState('');
   const [includeZero, setIncludeZero] = useState(false);
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number; item: any } | null>(null);
 
   // Sync BU dari localStorage + listen event tab change
   useEffect(() => {
@@ -127,7 +129,14 @@ export default function StockPage() {
               </thead>
               <tbody>
                 {data.items.map((item, i) => (
-                  <tr key={i}>
+                  <tr 
+                    key={i}
+                    onContextMenu={(e) => {
+                      e.preventDefault();
+                      setContextMenu({ x: e.clientX, y: e.clientY, item });
+                    }}
+                    className="hover:bg-slate-800/50 cursor-context-menu"
+                  >
                     <td className="font-semibold">{item.nama}</td>
                     <td className="text-sm text-muted">
                       {[item.warna, item.ukuran, item.lebar].filter(Boolean).join(' / ') || '-'}
@@ -150,6 +159,28 @@ export default function StockPage() {
           </div>
         )}
       </div>
+
+      {contextMenu && (
+        <ContextMenu
+          x={contextMenu.x}
+          y={contextMenu.y}
+          onClose={() => setContextMenu(null)}
+          options={[
+            {
+              label: 'Salin Nama Barang',
+              onClick: () => navigator.clipboard.writeText(contextMenu.item.nama),
+            },
+            {
+              label: 'Lihat Riwayat Transaksi',
+              onClick: () => {
+                // To filter history, we could navigate or open a modal. For now, copy name.
+                navigator.clipboard.writeText(contextMenu.item.nama);
+                toast('Nama disalin, tempel di pencarian History', 'success');
+              }
+            }
+          ]}
+        />
+      )}
     </div>
   );
 }

@@ -35,6 +35,8 @@ import { generateSuratJalanPdf } from '@/lib/reports';
 import { RadialLoading } from '@/lib/RadialLoading';
 import { alertError, toast, withLoading } from '@/lib/swal';
 import { formatCurrency, formatDateDmy } from '@/lib/utils';
+import { ContextMenu } from '@/components/ContextMenu';
+import { voidTransaction } from '@/lib/transaction';
 
 const TIPE_OPTIONS: { value: HistoryTipe; label: string }[] = [
   { value: 'all',    label: 'Semua' },
@@ -71,6 +73,7 @@ export default function HistoryPage() {
   const [rekapGroupBy, setRekapGroupBy] = useState<HistoryGroupBy>('nama');
   const [rekapData, setRekapData] = useState<HistoryRekapResult | null>(null);
   const [rekapLoading, setRekapLoading] = useState(false);
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number; item: any } | null>(null);
 
   useEffect(() => {
     const initial = localStorage.getItem('wms_active_bu') || '';
@@ -368,7 +371,14 @@ export default function HistoryPage() {
                   const noSj = (tx['No SJ'] as string) || '';
                   const isOutbound = (Number(tx['Keluar']) || 0) > 0;
                   return (
-                    <tr key={i}>
+                    <tr 
+                      key={i}
+                      onContextMenu={(e) => {
+                        e.preventDefault();
+                        setContextMenu({ x: e.clientX, y: e.clientY, item: tx });
+                      }}
+                      className="hover:bg-slate-800/50 cursor-context-menu"
+                    >
                       <td>{formatDateDmy(tx['Tanggal'] as string)}</td>
                       <td className="font-semibold">
                         {(tx['Nama Material'] || tx['Nama Barang'] || '-') as string}
@@ -422,6 +432,40 @@ export default function HistoryPage() {
           </div>
         )}
       </div>
+
+      {contextMenu && (
+        <ContextMenu
+          x={contextMenu.x}
+          y={contextMenu.y}
+          onClose={() => setContextMenu(null)}
+          options={[
+            {
+              label: 'Salin ID Transaksi',
+              onClick: () => navigator.clipboard.writeText(contextMenu.item['ID'] as string),
+            },
+            {
+              label: 'Salin Nama Barang',
+              onClick: () => navigator.clipboard.writeText((contextMenu.item['Nama Material'] || contextMenu.item['Nama Barang']) as string),
+            },
+            {
+              label: 'Void Transaksi',
+              danger: true,
+              onClick: async () => {
+                const txId = contextMenu.item['ID'] as string;
+                if (!confirm(`Yakin ingin void transaksi ${txId}?`)) return;
+                const res = await withLoading(() => voidTransaction(bu, txId, 'Void via Context Menu'), {
+                  loadingText: 'Voiding...',
+                  successMessage: `Transaksi ${txId} di-void`,
+                });
+                if (res) {
+                  // Reload items
+                  handleSearch();
+                }
+              }
+            }
+          ]}
+        />
+      )}
 
       {/* Modal Rekap */}
       {rekapOpen && (
