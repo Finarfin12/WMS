@@ -286,7 +286,7 @@ export default function DashboardPage() {
                         </span>
                       ) : (
                         // Multi-UoM (Chemical): "100 Kg / 50 Liter"
-                        <div className="flex flex-col items-end gap-0.5">
+                        <div className="flex flex-col items-start gap-0.5">
                           {uomEntries.map(([uom, qty]) => {
                             const cleanUom = bu.bu.toLowerCase().trim() === 'atrione' ? 'prs' : uom;
                             return (
