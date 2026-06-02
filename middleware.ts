@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { proxy } from './proxy';
+import { proxy } from './lib/auth-proxy';
 
 export async function middleware(req: NextRequest) {
   return proxy(req);
