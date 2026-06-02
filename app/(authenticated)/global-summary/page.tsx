@@ -2,12 +2,14 @@
 
 import { useEffect, useState } from 'react';
 import { getDashboardGlobalSummary } from '@/lib/dashboard';
+import { listBus, type BUConfig } from '@/lib/bu-registry';
 import { RadialLoading } from '@/lib/RadialLoading';
 import { alertError } from '@/lib/swal';
 import { ArrowsClockwise } from '@phosphor-icons/react';
 
 export default function GlobalSummaryPage() {
   const [data, setData] = useState<any[]>([]);
+  const [bus, setBus] = useState<BUConfig[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -15,8 +17,12 @@ export default function GlobalSummaryPage() {
     if (!silent) setLoading(true);
     setRefreshing(true);
     try {
-      const result = await getDashboardGlobalSummary();
+      const [result, buList] = await Promise.all([
+        getDashboardGlobalSummary(),
+        listBus()
+      ]);
       setData(result || []);
+      setBus(buList || []);
     } catch (err) {
       alertError(err, 'Gagal memuat Global Summary');
     } finally {
@@ -68,12 +74,28 @@ export default function GlobalSummaryPage() {
     groupedData[bu].totalItems += items; 
   });
 
-  // Jika ternyata sheet kosong, tampilkan fallback manual sesuai screenshot untuk testing
-  const finalGroups = Object.keys(groupedData).length > 0 ? groupedData : {
-    'CANVAS': { uomTotals: { 'METER': 800 }, totalItems: 1 },
-    'CHEMICAL': { uomTotals: { 'LITER': 200, 'KILOGRAM': 1450 }, totalItems: 6 },
-    'ATRIONE': { uomTotals: { 'BOX': 90 }, totalItems: 1 },
-  };
+  // Gabungkan dengan BU yang terdaftar, set default 0 jika belum ada datanya
+  const finalGroups: Record<string, { uomTotals: Record<string, number>, totalItems: number }> = {};
+  
+  bus.forEach(b => {
+    const buName = b.bu_name.toUpperCase();
+    if (groupedData[buName]) {
+      finalGroups[buName] = groupedData[buName];
+    } else {
+      // Default 0 for the default UOM
+      finalGroups[buName] = { 
+        uomTotals: { [b.default_uom.toUpperCase()]: 0 }, 
+        totalItems: 0 
+      };
+    }
+  });
+
+  // Tambahkan data dari spreadsheet yang mungkin bukan BU resmi
+  Object.keys(groupedData).forEach(k => {
+    if (!finalGroups[k]) {
+      finalGroups[k] = groupedData[k];
+    }
+  });
 
   return (
     <div>
