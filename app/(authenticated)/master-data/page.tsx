@@ -29,6 +29,7 @@ import { listBus, getBuFlags, type BUConfig } from '@/lib/bu-registry';
 import { RadialLoading } from '@/lib/RadialLoading';
 import { confirm, toast, alertError, withLoading } from '@/lib/swal';
 import { formatCurrency, formatDateDmy, parseHargaID, formatHargaDisplay } from '@/lib/utils';
+import { ContextMenu } from '@/components/ContextMenu';
 
 // Helper format tanggal (dipakai di grouping batch)
 function formatDate(iso: string): string {
@@ -111,6 +112,7 @@ export default function MasterDataPage() {
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [expandedKeys, setExpandedKeys] = useState<Set<string>>(new Set());
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number; item?: MdRow; isGroup?: boolean; groupName?: string } | null>(null);
 
   function toggleExpand(key: string) {
     setExpandedKeys((prev) => {
@@ -357,7 +359,11 @@ export default function MasterDataPage() {
                       <tr
                         key={grp.key}
                         onClick={() => toggleExpand(grp.key)}
-                        className="cursor-pointer hover:bg-[var(--bg-color)]"
+                        onContextMenu={(e) => {
+                          e.preventDefault();
+                          setContextMenu({ x: e.clientX, y: e.clientY, isGroup: true, groupName: grp.nama });
+                        }}
+                        className="cursor-pointer hover:bg-slate-800/50"
                       >
                         <td>
                           {isOpen ? (
@@ -393,7 +399,12 @@ export default function MasterDataPage() {
                         grp.batches.map((batch, i) => (
                           <tr
                             key={`${grp.key}-${i}`}
-                            className="bg-[var(--bg-color)] text-sm"
+                            onContextMenu={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              setContextMenu({ x: e.clientX, y: e.clientY, item: batch, isGroup: false });
+                            }}
+                            className="bg-[var(--bg-color)] text-sm hover:bg-slate-800/50 cursor-context-menu"
                           >
                             <td></td>
                             <td colSpan={2} className="pl-6 text-muted">
@@ -463,7 +474,14 @@ export default function MasterDataPage() {
               </thead>
               <tbody>
                 {items.map((item, i) => (
-                  <tr key={(item.ID as string) || i}>
+                  <tr 
+                    key={(item.ID as string) || i}
+                    onContextMenu={(e) => {
+                      e.preventDefault();
+                      setContextMenu({ x: e.clientX, y: e.clientY, item: item, isGroup: false });
+                    }}
+                    className="hover:bg-slate-800/50 cursor-context-menu"
+                  >
                     <td>
                       <span className="text-xs px-2 py-1 rounded bg-[var(--bg-color)] text-muted">
                         {(item['Tipe'] as string) || '-'}
@@ -521,6 +539,71 @@ export default function MasterDataPage() {
           </div>
         )}
       </div>
+
+      {contextMenu && (
+        <ContextMenu
+          x={contextMenu.x}
+          y={contextMenu.y}
+          onClose={() => setContextMenu(null)}
+          options={
+            contextMenu.isGroup
+              ? [
+                  {
+                    label: `Tambah Batch ${contextMenu.groupName}`,
+                    icon: <Plus weight="bold" />,
+                    onClick: () => {
+                      setShowForm(true);
+                      setEditingId(null);
+                      setForm({
+                        tipe: isAtrione ? 'Produk Baru' : 'Material Baru',
+                        tanggal: new Date().toISOString().slice(0, 10),
+                        nama: contextMenu.groupName || '',
+                        warna: '',
+                        ukuran: '',
+                        lebar: '',
+                        uom: '',
+                        harga_jual: '',
+                        hpp: '',
+                        satuan_harga: 'IDR',
+                        stok_awal: '',
+                      });
+                    },
+                  },
+                ]
+              : [
+                  {
+                    label: 'Salin Nama',
+                    onClick: () =>
+                      navigator.clipboard.writeText(
+                        (contextMenu.item?.['Nama Material'] ||
+                          contextMenu.item?.['Nama Barang'] ||
+                          '') as string
+                      ),
+                  },
+                  {
+                    label: 'Edit Data',
+                    icon: <PencilSimple weight="bold" />,
+                    onClick: () => contextMenu.item && openEdit(contextMenu.item),
+                  },
+                  {
+                    label: 'Hapus',
+                    icon: <Trash weight="bold" />,
+                    danger: true,
+                    onClick: () => {
+                      if (contextMenu.item) {
+                        handleDelete(
+                          (contextMenu.item.ID as string) || '',
+                          (contextMenu.item['Nama Material'] ||
+                            contextMenu.item['Nama Barang'] ||
+                            '') as string
+                        );
+                      }
+                    },
+                  },
+                ]
+          }
+        />
+      )}
 
       {/* Modal form */}
       {showForm && (

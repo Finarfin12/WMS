@@ -21,6 +21,7 @@ import {
   FilePdf,
   ChartBar,
   X,
+  Funnel,
 } from '@phosphor-icons/react';
 import {
   searchHistory,
@@ -234,7 +235,9 @@ export default function HistoryPage() {
             />
           </div>
           <div className="form-group">
-            <label>Tipe Transaksi</label>
+            <label className="flex items-center gap-1">
+              <Funnel size={14} /> Tipe Transaksi
+            </label>
             <select
               className="form-control"
               value={filters.tipe}
