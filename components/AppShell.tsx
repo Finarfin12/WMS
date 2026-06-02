@@ -309,6 +309,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 }
 
 function shouldShowBuTabs(pathname: string): boolean {
-  // BU tabs muncul di: transaction, stock, master-data, history, reports
-  return /^\/(transaction|stock|master-data|history|reports)/.test(pathname);
+  // BU tabs muncul di: transaction, stock, master-data, history, reports, import
+  return /^\/(transaction|stock|master-data|history|reports|import)/.test(pathname);
 }
