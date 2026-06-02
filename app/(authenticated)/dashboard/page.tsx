@@ -17,6 +17,11 @@ import {
   Warning,
   Buildings,
   ArrowsClockwise,
+  MapPin,
+  TShirt,
+  Flask,
+  Sneaker,
+  Shapes,
 } from '@phosphor-icons/react';
 import { getDashboardLive, type DashboardData } from '@/lib/dashboard';
 import { RadialLoading } from '@/lib/RadialLoading';

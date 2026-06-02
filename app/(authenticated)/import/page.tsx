@@ -20,6 +20,8 @@ import {
   Download,
   PaperPlaneTilt,
   ArrowsClockwise,
+  Package,
+  Folder,
 } from '@phosphor-icons/react';
 import {
   previewImport,
@@ -240,7 +242,7 @@ export default function ImportPage() {
                   : 'border-[var(--border)] text-muted hover:border-[var(--primary)]'
               }`}
             >
-              {t === 'transaction' ? '📦 Transaksi' : '🗂️ Master Data'}
+              {t === 'transaction' ? <span className="flex items-center gap-2"><Package size={20} weight={type === 'transaction' ? 'fill' : 'regular'} /> Transaksi</span> : <span className="flex items-center gap-2"><Folder size={20} weight={type === 'masterData' ? 'fill' : 'regular'} /> Master Data</span>}
             </button>
           ))}
         </div>

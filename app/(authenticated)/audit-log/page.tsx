@@ -21,6 +21,7 @@ import {
   ArrowRight,
   ArrowsClockwise,
   X,
+  Robot,
 } from '@phosphor-icons/react';
 import { listAuditLogs, type AuditLogEntry, type AuditListResult } from '@/lib/audit';
 import { formatDateDmy } from '@/lib/utils';
@@ -280,8 +281,8 @@ export default function AuditLogPage() {
                     <tr key={i}>
                       <td className="text-sm font-mono">{formatTimestamp(entry.timestamp)}</td>
                       <td className="text-sm">
-                        <span className={entry.user === 'system' ? 'text-muted italic' : ''}>
-                          {entry.user === 'system' ? '🤖 system' : entry.user}
+                        <span className={entry.user === 'system' ? 'text-muted italic flex items-center gap-1' : ''}>
+                          {entry.user === 'system' ? <><Robot size={16} /> system</> : entry.user}
                         </span>
                       </td>
                       <td>
