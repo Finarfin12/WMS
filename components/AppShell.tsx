@@ -171,20 +171,20 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     <div className="flex h-screen overflow-hidden">
       {/* Sidebar */}
       <aside className={cn('sidebar', sidebarCollapsed && 'collapsed')}>
-        <div className="px-5 mb-6 flex items-center justify-between">
+        <div className="p-5 mb-4 flex items-center justify-between bg-white shadow-sm border-b border-[var(--border)]" style={{ minHeight: '73px' }}>
           {!sidebarCollapsed && (
-            <div className="flex items-center gap-2 sidebar-label">
+            <div className="flex items-center gap-3 sidebar-label">
               {sysConfig?.system_logo_url ? (
                 /* eslint-disable-next-line @next/next/no-img-element */
-                <img src={sysConfig.system_logo_url} alt="Logo" className="max-h-8 max-w-[120px] object-contain" />
+                <img src={sysConfig.system_logo_url} alt="Logo" className="max-h-10 max-w-[120px] object-contain" />
               ) : null}
-              <h1 className="text-xl font-extrabold text-white">{sysConfig?.system_name || 'WMS'}</h1>
+              <h1 className="text-xl font-extrabold text-[var(--primary)]">{sysConfig?.system_name || 'WMS'}</h1>
             </div>
           )}
           <button
             type="button"
             onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-            className="text-white p-1 hover:bg-white/10 rounded"
+            className="text-[var(--primary)] p-1 hover:bg-[var(--primary)]/10 rounded"
             aria-label="Toggle sidebar"
           >
             <List size={22} weight="bold" />

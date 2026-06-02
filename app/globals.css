@@ -263,7 +263,6 @@ a:hover {
   color: white;
   display: flex;
   flex-direction: column;
-  padding-top: 20px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   z-index: 1000;
