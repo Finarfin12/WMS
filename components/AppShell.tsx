@@ -34,6 +34,7 @@ import {
   Moon,
   Sun,
   ClipboardText,
+  Keyboard,
   type Icon as IconType,
 } from '@phosphor-icons/react';
 import { logout } from '@/lib/auth';
@@ -41,6 +42,7 @@ import { listBus, type BUConfig } from '@/lib/bu-registry';
 import { confirm, toast } from '@/lib/swal';
 import { getSystemConfig, type SystemConfig } from '@/lib/system';
 import { cn } from '@/lib/utils';
+import { ShortcutManager } from './ShortcutManager';
 
 interface NavItem {
   href: string;
@@ -273,14 +275,25 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           <div className="text-sm text-muted">
             Login sebagai <strong>{user.email}</strong>
           </div>
-          <button
-            type="button"
-            onClick={toggleDarkMode}
-            className="p-2 rounded hover:bg-[var(--bg-color)]"
-            aria-label="Toggle dark mode"
-          >
-            {darkMode ? <Sun size={20} weight="fill" /> : <Moon size={20} weight="fill" />}
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => window.dispatchEvent(new CustomEvent('open-shortcuts'))}
+              className="p-2 rounded hover:bg-[var(--bg-color)] text-slate-500 hover:text-primary transition-colors"
+              title="Panduan Pintasan (Ctrl + /)"
+            >
+              <Keyboard size={20} weight="fill" />
+            </button>
+            <button
+              type="button"
+              onClick={toggleDarkMode}
+              className="p-2 rounded hover:bg-[var(--bg-color)] text-slate-500 hover:text-primary transition-colors"
+              aria-label="Toggle dark mode"
+              title="Toggle Tema"
+            >
+              {darkMode ? <Sun size={20} weight="fill" /> : <Moon size={20} weight="fill" />}
+            </button>
+          </div>
         </div>
 
         {/* Tab BU header — hanya muncul di page yang relevan */}
@@ -304,6 +317,9 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           {children}
         </div>
       </main>
+
+      {/* Global Shortcut Manager */}
+      <ShortcutManager />
     </div>
   );
 }

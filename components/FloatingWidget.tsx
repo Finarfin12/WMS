@@ -1,12 +1,13 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { Calculator, Package, X, CaretUp, MagnifyingGlass, ArrowsClockwise } from '@phosphor-icons/react';
+import { Calculator, Package, X, MagnifyingGlass, ArrowsClockwise, Notepad } from '@phosphor-icons/react';
 import { getStock, type StockGetResult } from '@/lib/stock';
+import { getCurrentUser } from '@/lib/auth';
 
 export function FloatingWidget() {
   const [isOpen, setIsOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'calc' | 'stock'>('calc');
+  const [activeTab, setActiveTab] = useState<'calc' | 'stock' | 'note'>('calc');
   const [position, setPosition] = useState({ x: -1, y: -1 });
   const [isDragging, setIsDragging] = useState(false);
   const dragRef = useRef<{ startX: number; startY: number; initX: number; initY: number }>({
@@ -16,11 +17,31 @@ export function FloatingWidget() {
   // Calculator state
   const [calcInput, setCalcInput] = useState('');
   
+  // Note state
+  const [noteInput, setNoteInput] = useState('');
+
   // Stock state
   const [bu, setBu] = useState('');
   const [search, setSearch] = useState('');
   const [stockResult, setStockResult] = useState<StockGetResult | null>(null);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const user = getCurrentUser();
+    if (user) {
+      const savedNote = localStorage.getItem(`wms_sticky_${user.email}`);
+      if (savedNote) setNoteInput(savedNote);
+    }
+  }, []);
+
+  const handleNoteChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const val = e.target.value;
+    setNoteInput(val);
+    const user = getCurrentUser();
+    if (user) {
+      localStorage.setItem(`wms_sticky_${user.email}`, val);
+    }
+  };
 
   useEffect(() => {
     const initial = localStorage.getItem('wms_active_bu') || '';
@@ -140,6 +161,12 @@ export function FloatingWidget() {
           >
             <Package size={16} className="inline mr-1" weight="duotone" /> Stock
           </button>
+          <button 
+            className={`px-3 py-1.5 rounded-md transition-colors ${activeTab === 'note' ? 'bg-primary text-white shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white'}`}
+            onClick={() => setActiveTab('note')}
+          >
+            <Notepad size={16} className="inline mr-1" weight="duotone" /> Note
+          </button>
         </div>
         <button onClick={() => setIsOpen(false)} className="text-slate-400 hover:text-red-500 transition-colors p-1 rounded-md hover:bg-slate-200 dark:hover:bg-slate-700">
           <X size={20} weight="bold" />
@@ -184,6 +211,15 @@ export function FloatingWidget() {
                 =
               </button>
             </div>
+          </div>
+        ) : activeTab === 'note' ? (
+          <div className="flex flex-col h-full">
+            <textarea
+              className="flex-1 w-full p-4 bg-[#fff7d1] dark:bg-yellow-900/20 text-slate-800 dark:text-yellow-100 placeholder-slate-500 dark:placeholder-yellow-700/50 rounded-lg shadow-inner resize-none focus:outline-none focus:ring-1 focus:ring-yellow-400 border border-transparent focus:border-yellow-400 leading-relaxed font-medium"
+              placeholder="Tulis catatan (otomatis tersimpan untuk akun Anda)..."
+              value={noteInput}
+              onChange={handleNoteChange}
+            />
           </div>
         ) : (
           <div className="flex flex-col h-full">
