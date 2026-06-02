@@ -62,6 +62,7 @@ export async function verifyIntegrity(): Promise<VerifyIntegrityResult> {
 export interface SystemConfig {
   system_logo_url: string | null;
   system_logo_id: string | null;
+  system_name: string;
 }
 
 export async function getSystemConfig(): Promise<SystemConfig> {
@@ -80,6 +81,10 @@ export async function getSystemConfig(): Promise<SystemConfig> {
   
   // Fallback to AppsScript directly
   return callAppsScript<SystemConfig, {}>('system.getConfig' as any, {});
+}
+
+export async function saveSystemConfig(payload: { system_name: string }): Promise<{ ok: boolean }> {
+  return callAppsScript<{ ok: boolean }, { system_name: string }>('system.saveConfig' as any, payload);
 }
 
 export interface UploadLogoPayload {

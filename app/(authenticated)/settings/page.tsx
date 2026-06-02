@@ -1,15 +1,22 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ShieldCheck, ArrowsClockwise } from '@phosphor-icons/react';
-import { verifyIntegrity, reconcileStock } from '@/lib/system';
-import { uploadSystemLogo } from '@/lib/system';
+import { verifyIntegrity, reconcileStock, getSystemConfig, saveSystemConfig, uploadSystemLogo } from '@/lib/system';
 import { alertError, toast, withLoading } from '@/lib/swal';
 import Swal from 'sweetalert2';
 
 export default function SettingsPage() {
   const [checkingHealth, setCheckingHealth] = useState(false);
   const [auditingData, setAuditingData] = useState(false);
+  const [systemName, setSystemName] = useState('WMS');
+  const [savingName, setSavingName] = useState(false);
+
+  useEffect(() => {
+    getSystemConfig().then((cfg) => {
+      if (cfg && cfg.system_name) setSystemName(cfg.system_name);
+    }).catch(console.error);
+  }, []);
 
   async function handleHealthCheck() {
     setCheckingHealth(true);
@@ -132,11 +139,42 @@ export default function SettingsPage() {
         <div className="card flex flex-col hover:border-[var(--primary)] transition-all">
           <div className="flex items-center gap-2 mb-2">
             <ShieldCheck size={24} weight="bold" className="text-primary" />
-            <h2 className="text-xl font-bold text-primary">Logo Sistem</h2>
+            <h2 className="text-xl font-bold text-primary">Logo & Nama Sistem</h2>
           </div>
-          <p className="text-muted text-sm mb-6 flex-1">
-            Ganti logo utama WMS (Sidebar & Halaman Login). Gunakan format PNG tanpa background (maksimal 1 MB).
+          <p className="text-muted text-sm mb-4">
+            Ubah nama aplikasi atau ganti logo utama WMS (Sidebar & Login). Logo maksimal 1 MB (PNG transparan).
           </p>
+
+          <div className="flex flex-col sm:flex-row items-end gap-3 mb-6 mt-auto">
+            <div className="flex-1 w-full">
+              <label className="text-sm font-semibold mb-1 block">Nama Aplikasi</label>
+              <input 
+                type="text" 
+                value={systemName} 
+                onChange={e => setSystemName(e.target.value)}
+                className="form-control"
+              />
+            </div>
+            <button 
+              className="btn btn-primary whitespace-nowrap"
+              disabled={savingName}
+              onClick={async () => {
+                setSavingName(true);
+                try {
+                  await saveSystemConfig({ system_name: systemName });
+                  toast('Nama sistem berhasil disimpan', 'success');
+                  setTimeout(() => window.location.reload(), 1000);
+                } catch (e) {
+                  alertError(e);
+                } finally {
+                  setSavingName(false);
+                }
+              }}
+            >
+              {savingName ? 'Menyimpan...' : 'Simpan Nama'}
+            </button>
+          </div>
+
           <input
             type="file"
             accept="image/png,image/jpeg,image/svg+xml,image/webp"

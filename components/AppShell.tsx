@@ -178,7 +178,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                 /* eslint-disable-next-line @next/next/no-img-element */
                 <img src={sysConfig.system_logo_url} alt="Logo" className="max-h-8 max-w-[120px] object-contain" />
               ) : null}
-              <h1 className="text-xl font-extrabold text-white">WMS</h1>
+              <h1 className="text-xl font-extrabold text-white">{sysConfig?.system_name || 'WMS'}</h1>
             </div>
           )}
           <button

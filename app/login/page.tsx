@@ -150,7 +150,7 @@ export default function LoginPage() {
             /* eslint-disable-next-line @next/next/no-img-element */
             <img src={sysConfig.system_logo_url} alt="Logo Perusahaan" className="max-h-16 max-w-[200px] object-contain mb-2" />
           )}
-          <h2>WMS Gudang</h2>
+          <h2>{sysConfig?.system_name || 'WMS Gudang'}</h2>
         </div>
         <p className="subtitle">
           {step === 'email'
