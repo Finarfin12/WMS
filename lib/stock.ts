@@ -24,6 +24,7 @@ export interface StockItem {
   hpp: number | null;
   satuan_harga: string;
   last_update: string;
+  batches?: Array<{ harga: number, stok: number }>;
 }
 
 export interface StockGetPayload {

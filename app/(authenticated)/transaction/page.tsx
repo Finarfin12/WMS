@@ -818,6 +818,25 @@ export default function TransactionPage() {
               />
             </div>
 
+            {flags?.has_fifo && (
+              <div className="form-group">
+                <label>Harga Jual / Batch Value</label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted">Rp</span>
+                  <input
+                    type="number"
+                    className="form-control"
+                    value={form.harga}
+                    onChange={(e) => setForm({ ...form, harga: e.target.value })}
+                    required
+                    min="0"
+                    style={{ paddingLeft: '2.5rem' }}
+                    placeholder="Wajib untuk FIFO"
+                  />
+                </div>
+              </div>
+            )}
+
             <div className="form-group">
               <label className="flex justify-between items-center">
                 <span>Customer / Supplier</span>

@@ -6,8 +6,8 @@
  * BU active dipilih dari tab di AppShell (event 'bu-changed').
  */
 
-import { useEffect, useState, useCallback } from 'react';
-import { MagnifyingGlass, Package, ArrowsClockwise } from '@phosphor-icons/react';
+import React, { useEffect, useState, useCallback } from 'react';
+import { MagnifyingGlass, Package, ArrowsClockwise, CaretDown, CaretRight } from '@phosphor-icons/react';
 import { getStock, type StockGetResult } from '@/lib/stock';
 import { RadialLoading } from '@/lib/RadialLoading';
 import { alertError, toast } from '@/lib/swal';
@@ -21,6 +21,17 @@ export default function StockPage() {
   const [search, setSearch] = useState('');
   const [includeZero, setIncludeZero] = useState(false);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; item: any } | null>(null);
+  
+  const [expandedKeys, setExpandedKeys] = useState<Set<number>>(new Set());
+
+  function toggleExpand(idx: number) {
+    setExpandedKeys((prev) => {
+      const next = new Set(prev);
+      if (next.has(idx)) next.delete(idx);
+      else next.add(idx);
+      return next;
+    });
+  }
 
   // Sync BU dari localStorage + listen event tab change
   useEffect(() => {
@@ -116,6 +127,7 @@ export default function StockPage() {
             <table className="tbl">
               <thead>
                 <tr>
+                  <th className="w-10"></th>
                   <th>Nama</th>
                   <th>Variasi</th>
                   <th>UoM</th>
@@ -128,32 +140,78 @@ export default function StockPage() {
                 </tr>
               </thead>
               <tbody>
-                {data.items.map((item, i) => (
-                  <tr 
-                    key={i}
-                    onContextMenu={(e) => {
-                      e.preventDefault();
-                      setContextMenu({ x: e.clientX, y: e.clientY, item });
-                    }}
-                    className="hover:bg-slate-800/50 cursor-context-menu"
-                  >
-                    <td className="font-semibold">{item.nama}</td>
-                    <td className="text-sm text-muted">
-                      {[item.warna, item.ukuran, item.lebar].filter(Boolean).join(' / ') || '-'}
-                    </td>
-                    <td>{item.uom}</td>
-                    <td className="text-right font-bold">
-                      <span className={item.stok < 10 ? 'text-danger' : ''}>{item.stok}</span>
-                    </td>
-                    <td className="text-right text-muted">{item.stok_awal}</td>
-                    <td className="text-right text-success">+{item.total_masuk}</td>
-                    <td className="text-right text-danger">-{item.total_keluar}</td>
-                    <td className="text-right">{formatCurrency(item.harga_jual)}</td>
-                    <td className="text-right font-semibold">
-                      {formatCurrency(item.stok * item.harga_jual)}
-                    </td>
-                  </tr>
-                ))}
+                {data.items.map((item, i) => {
+                  const hasBatches = item.batches && item.batches.length > 1;
+                  const isOpen = expandedKeys.has(i);
+                  
+                  return (
+                    <React.Fragment key={i}>
+                      <tr 
+                        onClick={() => hasBatches && toggleExpand(i)}
+                        onContextMenu={(e) => {
+                          e.preventDefault();
+                          setContextMenu({ x: e.clientX, y: e.clientY, item });
+                        }}
+                        className={`hover:bg-slate-800/50 ${hasBatches ? 'cursor-pointer' : 'cursor-context-menu'}`}
+                      >
+                        <td className="text-center">
+                          {hasBatches && (
+                            isOpen ? (
+                              <CaretDown size={16} weight="bold" className="text-primary inline-block" />
+                            ) : (
+                              <CaretRight size={16} weight="bold" className="text-muted inline-block" />
+                            )
+                          )}
+                        </td>
+                        <td className="font-semibold">{item.nama}</td>
+                        <td className="text-sm text-muted">
+                          {[item.warna, item.ukuran, item.lebar].filter(Boolean).join(' / ') || '-'}
+                        </td>
+                        <td>{item.uom}</td>
+                        <td className="text-right font-bold">
+                          <span className={item.stok < 10 ? 'text-danger' : ''}>{item.stok}</span>
+                        </td>
+                        <td className="text-right text-muted">{item.stok_awal}</td>
+                        <td className="text-right text-success">+{item.total_masuk}</td>
+                        <td className="text-right text-danger">-{item.total_keluar}</td>
+                        <td className="text-right">
+                          {hasBatches ? (
+                            <span className="text-warning font-semibold text-sm px-2 py-1 rounded bg-warning/10" title="Multi-batch dengan harga berbeda">
+                              {item.batches!.length} Batch
+                            </span>
+                          ) : (
+                            formatCurrency(item.harga_jual)
+                          )}
+                        </td>
+                        <td className="text-right font-semibold">
+                          {formatCurrency(item.stok * item.harga_jual)}
+                        </td>
+                      </tr>
+                      
+                      {isOpen && hasBatches && item.batches!.map((batch, bi) => (
+                        <tr 
+                          key={`${i}-${bi}`}
+                          className="bg-[var(--bg-color)] text-sm hover:bg-slate-800/50"
+                        >
+                          <td></td>
+                          <td colSpan={3} className="pl-6 text-muted">
+                            ↳ Batch {bi + 1}
+                          </td>
+                          <td className="text-right font-bold text-primary">
+                            {batch.stok}
+                          </td>
+                          <td colSpan={3}></td>
+                          <td className="text-right text-muted">
+                            {formatCurrency(batch.harga)}
+                          </td>
+                          <td className="text-right font-semibold text-muted">
+                            {formatCurrency(batch.stok * batch.harga)}
+                          </td>
+                        </tr>
+                      ))}
+                    </React.Fragment>
+                  );
+                })}
               </tbody>
             </table>
           </div>
