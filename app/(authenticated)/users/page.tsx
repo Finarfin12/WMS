@@ -36,6 +36,7 @@ export default function UsersPage() {
   const [editingEmail, setEditingEmail] = useState<string | null>(null);
   const [showInactive, setShowInactive] = useState(false);
 
+  const [form, setForm] = useState({
     email: '',
     role: 'User' as UserRole,
     username: '',
@@ -329,7 +330,6 @@ export default function UsersPage() {
                   className="form-control"
                   value={form.username}
                   onChange={(e) => setForm({ ...form, username: e.target.value })}
-                />
                 />
               </div>
               <div className="form-group">
