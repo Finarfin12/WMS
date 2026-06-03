@@ -35,6 +35,12 @@ export function ShortcutManager() {
         if (key === 's') { e.preventDefault(); router.push('/stock'); }
         if (key === 'm') { e.preventDefault(); router.push('/master-data'); }
         if (key === 'h') { e.preventDefault(); router.push('/history'); }
+        if (key === 'l') { e.preventDefault(); router.push('/reports'); }
+        if (key === 'g') { e.preventDefault(); router.push('/global-summary'); }
+        if (key === 'i') { e.preventDefault(); router.push('/import'); }
+        if (key === 'b') { e.preventDefault(); router.push('/bu-registry'); }
+        if (key === 'u') { e.preventDefault(); router.push('/users'); }
+        if (key === 'a') { e.preventDefault(); router.push('/audit-log'); }
       }
 
       // Ctrl + S for Save
@@ -70,14 +76,14 @@ export function ShortcutManager() {
   if (!showModal) return null;
 
   const Kbd = ({ children }: { children: React.ReactNode }) => (
-    <kbd className="px-2.5 py-1.5 bg-slate-200 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md text-sm font-mono font-bold text-slate-800 dark:text-slate-100 shadow-sm">
+    <kbd className="px-2 py-1 bg-slate-200 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md text-xs font-mono font-bold text-slate-800 dark:text-slate-100 shadow-sm whitespace-nowrap">
       {children}
     </kbd>
   );
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[9999] flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-slate-900 rounded-2xl max-w-2xl w-full shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-slate-200 dark:border-slate-800 overflow-hidden transform transition-all">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl max-w-4xl w-full shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-slate-200 dark:border-slate-800 overflow-hidden transform transition-all">
         <div className="flex justify-between items-center p-5 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
           <h2 className="text-xl font-extrabold flex items-center gap-3 text-slate-800 dark:text-white">
             <Keyboard size={28} weight="duotone" className="text-primary" />
@@ -91,57 +97,92 @@ export function ShortcutManager() {
           </button>
         </div>
         
-        <div className="p-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Kolom 1: Navigasi */}
+        <div className="p-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* Kolom 1: Menu Utama */}
             <div>
-              <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4 border-b border-slate-100 dark:border-slate-800 pb-2">Pindah Menu (Alt)</h3>
+              <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 border-b border-slate-100 dark:border-slate-800 pb-2">Menu Utama (Alt)</h3>
               <ul className="space-y-3">
                 <li className="flex justify-between items-center group">
-                  <span className="text-base font-medium text-slate-700 dark:text-slate-300 group-hover:text-primary transition-colors">Dashboard</span>
+                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300 group-hover:text-primary transition-colors">Dashboard</span>
                   <Kbd>Alt + D</Kbd>
                 </li>
                 <li className="flex justify-between items-center group">
-                  <span className="text-base font-medium text-slate-700 dark:text-slate-300 group-hover:text-primary transition-colors">Transaksi</span>
+                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300 group-hover:text-primary transition-colors">Global Summary</span>
+                  <Kbd>Alt + G</Kbd>
+                </li>
+                <li className="flex justify-between items-center group">
+                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300 group-hover:text-primary transition-colors">Transaksi</span>
                   <Kbd>Alt + T</Kbd>
                 </li>
                 <li className="flex justify-between items-center group">
-                  <span className="text-base font-medium text-slate-700 dark:text-slate-300 group-hover:text-primary transition-colors">Stok</span>
+                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300 group-hover:text-primary transition-colors">Stok</span>
                   <Kbd>Alt + S</Kbd>
                 </li>
                 <li className="flex justify-between items-center group">
-                  <span className="text-base font-medium text-slate-700 dark:text-slate-300 group-hover:text-primary transition-colors">Master Data</span>
+                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300 group-hover:text-primary transition-colors">Master Data</span>
                   <Kbd>Alt + M</Kbd>
                 </li>
                 <li className="flex justify-between items-center group">
-                  <span className="text-base font-medium text-slate-700 dark:text-slate-300 group-hover:text-primary transition-colors">History</span>
+                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300 group-hover:text-primary transition-colors">History</span>
                   <Kbd>Alt + H</Kbd>
                 </li>
               </ul>
             </div>
 
-            {/* Kolom 2: Aksi Cepat & BU */}
+            {/* Kolom 2: Analitik & Sistem */}
             <div>
-              <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4 border-b border-slate-100 dark:border-slate-800 pb-2">Aksi Cepat & Pindah BU</h3>
+              <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 border-b border-slate-100 dark:border-slate-800 pb-2">Analitik & Sistem (Alt)</h3>
               <ul className="space-y-3">
                 <li className="flex justify-between items-center group">
-                  <span className="text-base font-medium text-slate-700 dark:text-slate-300 group-hover:text-primary transition-colors">Simpan Form / Transaksi</span>
+                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300 group-hover:text-primary transition-colors">Laporan</span>
+                  <Kbd>Alt + L</Kbd>
+                </li>
+                <li className="flex justify-between items-center group">
+                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300 group-hover:text-primary transition-colors">Import</span>
+                  <Kbd>Alt + I</Kbd>
+                </li>
+                <li className="flex justify-between items-center group">
+                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300 group-hover:text-primary transition-colors">Audit Log</span>
+                  <Kbd>Alt + A</Kbd>
+                </li>
+                <li className="flex justify-between items-center group">
+                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300 group-hover:text-primary transition-colors">Users</span>
+                  <Kbd>Alt + U</Kbd>
+                </li>
+                <li className="flex justify-between items-center group">
+                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300 group-hover:text-primary transition-colors">BU Registry</span>
+                  <Kbd>Alt + B</Kbd>
+                </li>
+              </ul>
+            </div>
+
+            {/* Kolom 3: Aksi Cepat & BU */}
+            <div>
+              <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 border-b border-slate-100 dark:border-slate-800 pb-2">Aksi Cepat</h3>
+              <ul className="space-y-3">
+                <li className="flex justify-between items-center group">
+                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300 group-hover:text-primary transition-colors">Simpan Form</span>
                   <Kbd>Ctrl + S</Kbd>
                 </li>
                 <li className="flex justify-between items-center group">
-                  <span className="text-base font-medium text-slate-700 dark:text-slate-300 group-hover:text-primary transition-colors">Fokus Pencarian</span>
+                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300 group-hover:text-primary transition-colors">Cetak Resi / Laporan</span>
+                  <Kbd>Ctrl + P</Kbd>
+                </li>
+                <li className="flex justify-between items-center group">
+                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300 group-hover:text-primary transition-colors">Fokus Pencarian</span>
                   <Kbd>Ctrl + K</Kbd>
                 </li>
                 <li className="flex justify-between items-center group">
-                  <span className="text-base font-medium text-slate-700 dark:text-slate-300 group-hover:text-primary transition-colors">Pilih BU (Tab 1 / 2 / 3)</span>
+                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300 group-hover:text-primary transition-colors">Pilih BU Tab</span>
                   <Kbd>Alt + 1 / 2 / 3</Kbd>
                 </li>
                 <li className="flex justify-between items-center group">
-                  <span className="text-base font-medium text-slate-700 dark:text-slate-300 group-hover:text-primary transition-colors">Buka Panduan Ini</span>
+                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300 group-hover:text-primary transition-colors">Buka Panduan Ini</span>
                   <Kbd>Ctrl + /</Kbd>
                 </li>
                 <li className="flex justify-between items-center group">
-                  <span className="text-base font-medium text-slate-700 dark:text-slate-300 group-hover:text-primary transition-colors">Tutup Pop-up / Batal</span>
+                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300 group-hover:text-primary transition-colors">Tutup Pop-up</span>
                   <Kbd>Esc</Kbd>
                 </li>
               </ul>
