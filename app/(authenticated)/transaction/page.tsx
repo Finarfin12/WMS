@@ -39,6 +39,8 @@ export default function TransactionPage() {
   const [buConfig, setBuConfig] = useState<BUConfig | null>(null);
   const [recent, setRecent] = useState<HistoryItem[]>([]);
   const [loadingList, setLoadingList] = useState(false);
+  const [filterListDate, setFilterListDate] = useState('');
+  const [filterListSearch, setFilterListSearch] = useState('');
 
   // === Dropdowns & Datalists options ===
   const [materialOptions, setMaterialOptions] = useState<string[]>([]);
@@ -607,12 +609,28 @@ export default function TransactionPage() {
       {(
 
         <div className="card">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="card-title m-0">50 Transaksi Terakhir (30 hari)</h3>
-            <button type="button" onClick={loadRecent} className="btn btn-secondary">
-              <ArrowsClockwise size={16} weight="bold" />
-              Refresh
-            </button>
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
+            <h3 className="card-title m-0 whitespace-nowrap">50 Transaksi Terakhir (30 hari)</h3>
+            <div className="flex gap-2 w-full md:w-auto">
+              <input 
+                type="date" 
+                className="form-control text-sm py-1.5" 
+                value={filterListDate} 
+                onChange={(e) => setFilterListDate(e.target.value)} 
+                title="Filter Tanggal"
+              />
+              <input 
+                type="text" 
+                placeholder="Cari material..." 
+                className="form-control text-sm py-1.5 w-full md:w-48"
+                value={filterListSearch}
+                onChange={(e) => setFilterListSearch(e.target.value)}
+              />
+              <button type="button" onClick={() => { setFilterListDate(''); setFilterListSearch(''); loadRecent(); }} className="btn btn-secondary whitespace-nowrap py-1.5">
+                <ArrowsClockwise size={16} weight="bold" />
+                Refresh
+              </button>
+            </div>
           </div>
           {loadingList ? (
             <div className="py-12 flex justify-center">
@@ -636,7 +654,19 @@ export default function TransactionPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {recent.map((tx, i) => (
+                  {recent.filter(tx => {
+                    if (filterListDate && tx.Tanggal && tx.Tanggal !== '') {
+                      try {
+                        const txDateStr = new Date(tx.Tanggal as string).toISOString().slice(0, 10);
+                        if (txDateStr !== filterListDate) return false;
+                      } catch(e) {}
+                    }
+                    if (filterListSearch) {
+                      const searchStr = String(tx['Nama Material'] || tx['Nama Barang'] || '').toLowerCase();
+                      if (!searchStr.includes(filterListSearch.toLowerCase())) return false;
+                    }
+                    return true;
+                  }).map((tx, i) => (
                     <tr key={i}>
                       <td>{formatDateDmy(tx.Tanggal as string)}</td>
                       <td>{(tx['Nama Material'] || tx['Nama Barang'] || '-') as string}</td>
