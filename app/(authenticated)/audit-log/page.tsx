@@ -24,6 +24,7 @@ import {
   Robot,
 } from '@phosphor-icons/react';
 import { listAuditLogs, type AuditLogEntry, type AuditListResult } from '@/lib/audit';
+import { listUsers } from '@/lib/users';
 import { formatDateDmy } from '@/lib/utils';
 import { alertError } from '@/lib/swal';
 import { RadialLoading } from '@/lib/RadialLoading';
@@ -86,6 +87,7 @@ export default function AuditLogPage() {
   const [total, setTotal] = useState(0);
   const [offset, setOffset] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [usersMap, setUsersMap] = useState<Record<string, string>>({});
   const [filters, setFilters] = useState({
     action: '',
     user: '',
@@ -126,6 +128,14 @@ export default function AuditLogPage() {
 
   useEffect(() => {
     fetchLogs(0);
+    // Fetch users for mapping email to Username
+    listUsers().then((users) => {
+      const map: Record<string, string> = {};
+      users.forEach((u) => {
+        map[u.Email] = u.Username;
+      });
+      setUsersMap(map);
+    }).catch(() => { /* ignore */ });
   }, []);
 
   function handleSearch() {
@@ -282,7 +292,11 @@ export default function AuditLogPage() {
                       <td className="text-sm font-mono">{formatTimestamp(entry.timestamp)}</td>
                       <td className="text-sm">
                         <span className={entry.user === 'system' ? 'text-muted italic flex items-center gap-1' : ''}>
-                          {entry.user === 'system' ? <><Robot size={16} /> system</> : entry.user}
+                          {entry.user === 'system' ? <><Robot size={16} /> system</> : (
+                            usersMap[entry.user] ? (
+                              <span title={entry.user}>{usersMap[entry.user]}</span>
+                            ) : entry.user
+                          )}
                         </span>
                       </td>
                       <td>
@@ -358,7 +372,13 @@ export default function AuditLogPage() {
               </div>
               <div>
                 <span className="text-muted">User:</span>{' '}
-                <strong>{expandedDetail.user || '-'}</strong>
+                <strong>
+                  {expandedDetail.user === 'system' ? 'system' : (
+                    usersMap[expandedDetail.user] 
+                      ? `${usersMap[expandedDetail.user]} (${expandedDetail.user})` 
+                      : (expandedDetail.user || '-')
+                  )}
+                </strong>
               </div>
               <div>
                 <span className="text-muted">Action:</span>{' '}
