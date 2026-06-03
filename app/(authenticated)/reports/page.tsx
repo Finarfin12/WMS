@@ -251,7 +251,7 @@ export default function ReportsPage() {
               className="btn btn-secondary"
             >
               <FileXls size={16} weight="bold" />
-              Export Laporan
+              Export Laba
             </button>
           )}
         </div>
