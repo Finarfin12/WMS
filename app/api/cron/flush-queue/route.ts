@@ -31,12 +31,9 @@ const MAX_ITEMS_PER_RUN = 50;
 const SERVICE_NAME = 'apps-script';
 
 export async function GET(req: NextRequest) {
-  // Auth check — Vercel Cron set header otomatis kalau CRON_SECRET di-env
-  const authHeader = req.headers.get('authorization');
-  const expected = `Bearer ${process.env.CRON_SECRET ?? ''}`;
-  if (process.env.CRON_SECRET && authHeader !== expected) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  // Auth check dilepas agar frontend (FlushQueueProvider) bisa memanggil secara berkala
+  // tanpa harus mengekspos rahasia cron ke browser.
+  // Jika antrian kosong, endpoint ini sangat ringan dan langsung kembali.
 
   const startedAt = new Date().toISOString();
   const initial = await getQueueStats();
