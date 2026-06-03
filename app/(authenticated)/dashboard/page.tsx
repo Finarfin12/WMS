@@ -132,18 +132,18 @@ export default function DashboardPage() {
             const okItemsCount = Math.max(0, totalItemsCount - lowStockCount);
             const okPercentage = totalItemsCount > 0 ? (okItemsCount / totalItemsCount) * 100 : 100;
 
-            // Calculate daily In/Out (last 24 hours) from recent transactions
+            // Calculate recent In/Out (last 48 hours) to account for midnight-snapped dates
             let dailyIn = 0;
             let dailyOut = 0;
             data.recent_transactions.forEach((tx) => {
               if (tx.bu === bu.bu) {
-                // Check if transaction is in last 24h
                 const txDate = new Date(tx.Tanggal as string);
-                const diffMs = Date.now() - txDate.getTime();
+                // Use absolute diff in case of timezone shifts, and expand to 48 hours
+                const diffMs = Math.abs(Date.now() - txDate.getTime());
                 const diffHours = diffMs / (1000 * 60 * 60);
-                if (diffHours <= 24) {
-                  dailyIn += (tx.Masuk as number) || 0;
-                  dailyOut += (tx.Keluar as number) || 0;
+                if (diffHours <= 48) {
+                  dailyIn += Number(tx.Masuk) || 0;
+                  dailyOut += Number(tx.Keluar) || 0;
                 }
               }
             });
