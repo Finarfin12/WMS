@@ -570,6 +570,7 @@ export default function MasterDataPage() {
                         hpp: '',
                         satuan_harga: 'IDR',
                         stok_awal: '',
+                        alamat: '',
                       });
                     },
                   },
