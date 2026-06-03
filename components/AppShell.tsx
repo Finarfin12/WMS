@@ -319,7 +319,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       </main>
 
       {/* Global Shortcut Manager */}
-      <ShortcutManager />
+      <ShortcutManager role={user?.role} />
     </div>
   );
 }

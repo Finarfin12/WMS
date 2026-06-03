@@ -4,7 +4,8 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Keyboard, X } from '@phosphor-icons/react';
 
-export function ShortcutManager() {
+export function ShortcutManager({ role }: { role?: string }) {
+  const isSuperadmin = role === 'Superadmin';
   const [showModal, setShowModal] = useState(false);
   const router = useRouter();
 
@@ -38,9 +39,9 @@ export function ShortcutManager() {
         if (key === 'l') { e.preventDefault(); router.push('/reports'); }
         if (key === 'g') { e.preventDefault(); router.push('/global-summary'); }
         if (key === 'i') { e.preventDefault(); router.push('/import'); }
-        if (key === 'b') { e.preventDefault(); router.push('/bu-registry'); }
-        if (key === 'u') { e.preventDefault(); router.push('/users'); }
-        if (key === 'a') { e.preventDefault(); router.push('/audit-log'); }
+        if (key === 'b' && isSuperadmin) { e.preventDefault(); router.push('/bu-registry'); }
+        if (key === 'u' && isSuperadmin) { e.preventDefault(); router.push('/users'); }
+        if (key === 'a' && isSuperadmin) { e.preventDefault(); router.push('/audit-log'); }
       }
 
       // Ctrl + S for Save
@@ -142,18 +143,22 @@ export function ShortcutManager() {
                   <span className="text-sm font-medium text-slate-700 dark:text-slate-300 group-hover:text-primary transition-colors">Import</span>
                   <Kbd>Alt + I</Kbd>
                 </li>
-                <li className="flex justify-between items-center group">
-                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300 group-hover:text-primary transition-colors">Audit Log</span>
-                  <Kbd>Alt + A</Kbd>
-                </li>
-                <li className="flex justify-between items-center group">
-                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300 group-hover:text-primary transition-colors">Users</span>
-                  <Kbd>Alt + U</Kbd>
-                </li>
-                <li className="flex justify-between items-center group">
-                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300 group-hover:text-primary transition-colors">BU Registry</span>
-                  <Kbd>Alt + B</Kbd>
-                </li>
+                {isSuperadmin && (
+                  <>
+                    <li className="flex justify-between items-center group">
+                      <span className="text-sm font-medium text-slate-700 dark:text-slate-300 group-hover:text-primary transition-colors">Audit Log</span>
+                      <Kbd>Alt + A</Kbd>
+                    </li>
+                    <li className="flex justify-between items-center group">
+                      <span className="text-sm font-medium text-slate-700 dark:text-slate-300 group-hover:text-primary transition-colors">Users</span>
+                      <Kbd>Alt + U</Kbd>
+                    </li>
+                    <li className="flex justify-between items-center group">
+                      <span className="text-sm font-medium text-slate-700 dark:text-slate-300 group-hover:text-primary transition-colors">BU Registry</span>
+                      <Kbd>Alt + B</Kbd>
+                    </li>
+                  </>
+                )}
               </ul>
             </div>
 
