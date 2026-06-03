@@ -195,6 +195,7 @@ export default function MasterDataPage() {
       hpp: '',
       satuan_harga: 'IDR',
       stok_awal: '',
+      alamat: '',
     });
     setShowForm(true);
   }
@@ -215,6 +216,7 @@ export default function MasterDataPage() {
       hpp: String(item['HPP'] || ''),
       satuan_harga: (item['Satuan Harga'] as string) || 'IDR',
       stok_awal: String(item['Stok Awal'] || ''),
+      alamat: (item['Alamat'] as string) || '',
     });
     setShowForm(true);
   }
@@ -241,6 +243,7 @@ export default function MasterDataPage() {
       hpp: !hideExtraFields && form.hpp ? parseFloat(form.hpp) : undefined,
       satuan_harga: (!hideExtraFields ? form.satuan_harga : 'IDR') as 'IDR' | 'USD',
       stok_awal: !hideExtraFields && form.stok_awal ? parseFloat(form.stok_awal) : 0,
+      alamat: form.tipe === 'Customer Baru' && form.alamat ? form.alamat : undefined,
     };
 
     if (editingId) {
@@ -664,6 +667,19 @@ export default function MasterDataPage() {
                     required
                   />
                 </div>
+
+                {form.tipe === 'Customer Baru' && (
+                  <div className="form-group md:col-span-2">
+                    <label>Alamat (Dicetak di Surat Jalan)</label>
+                    <textarea
+                      className="form-control"
+                      rows={3}
+                      value={form.alamat || ''}
+                      onChange={(e) => setForm({ ...form, alamat: e.target.value })}
+                      placeholder="Masukkan alamat lengkap pengiriman..."
+                    />
+                  </div>
+                )}
 
                 {/* Hide fields for Customer and Payment Method */}
                 {form.tipe !== 'Customer Baru' && form.tipe !== 'Payment Method' && (

@@ -28,6 +28,7 @@ export interface MasterDataItem {
   Lebar?: string | number;
   Berat?: number;
   HPP?: number;
+  Alamat?: string;
 }
 
 export interface MasterDataListPayload {
@@ -53,6 +54,7 @@ export interface MasterDataSavePayload {
   lebar?: string | number;
   berat?: number;
   hpp?: number;
+  alamat?: string;
 }
 
 export interface MasterDataSaveResult {
