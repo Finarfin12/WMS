@@ -251,7 +251,7 @@ export default function ReportsPage() {
               className="btn btn-secondary"
             >
               <FileXls size={16} weight="bold" />
-              Export Laba
+              Export Laporan
             </button>
           )}
         </div>
@@ -260,7 +260,7 @@ export default function ReportsPage() {
       {/* Filter */}
       <div className="card">
         <h3 className="card-title">
-          {report?.has_hpp === false ? 'Laporan Penjualan' : 'Laporan Laba Kotor'}
+          Laporan
           {report && (
             <span className="text-sm text-muted font-normal ml-2">
               {report.has_hpp ? '(dengan HPP & margin)' : '(qty + revenue)'}

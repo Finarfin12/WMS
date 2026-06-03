@@ -87,7 +87,7 @@ export default function StockRekapPage() {
         </h1>
         <Link href="/reports" className="btn btn-secondary">
           <ArrowLeft size={16} weight="bold" />
-          Laporan Laba
+          Laporan
         </Link>
       </div>
 
