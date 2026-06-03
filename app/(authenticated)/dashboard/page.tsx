@@ -26,7 +26,7 @@ import {
 import { getDashboardLive, type DashboardData } from '@/lib/dashboard';
 import { RadialLoading } from '@/lib/RadialLoading';
 import { alertError } from '@/lib/swal';
-import { formatCurrency, formatDateDmy } from '@/lib/utils';
+import { formatCurrency, formatCompactIDR, formatDateDmy } from '@/lib/utils';
 import { DashboardCharts } from '@/components/DashboardCharts';
 
 export default function DashboardPage() {
@@ -91,7 +91,7 @@ export default function DashboardPage() {
         <StatBox
           icon={<CurrencyDollar size={28} weight="fill" />}
           title="Total Inventory Value"
-          value={formatCurrency(data.total_inventory_value)}
+          value={formatCompactIDR(data.total_inventory_value)}
           color="success"
         />
         <StatBox

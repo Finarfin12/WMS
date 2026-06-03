@@ -24,6 +24,14 @@ export function formatIDR(n: number): string {
   }).format(n);
 }
 
+/** Format currency IDR (Compact) */
+export function formatCompactIDR(n: number): string {
+  if (n >= 1e12) return `Rp ${(n / 1e12).toLocaleString('id-ID', { maximumFractionDigits: 2 })} T`;
+  if (n >= 1e9) return `Rp ${(n / 1e9).toLocaleString('id-ID', { maximumFractionDigits: 2 })} M`;
+  if (n >= 1e6) return `Rp ${(n / 1e6).toLocaleString('id-ID', { maximumFractionDigits: 2 })} Jt`;
+  return formatIDR(n);
+}
+
 /** Alias untuk formatIDR (consistency dengan UI lama) */
 export const formatCurrency = formatIDR;
 
