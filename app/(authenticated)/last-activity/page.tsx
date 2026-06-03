@@ -7,6 +7,7 @@
 import { useEffect, useState } from 'react';
 import { ArrowsClockwise, Clock } from '@phosphor-icons/react';
 import { getDashboardLive, type DashboardData } from '@/lib/dashboard';
+import { listUsers } from '@/lib/users';
 import { RadialLoading } from '@/lib/RadialLoading';
 import { alertError } from '@/lib/swal';
 import { formatDateDmy } from '@/lib/utils';
@@ -15,6 +16,7 @@ export default function LastActivityPage() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [usersMap, setUsersMap] = useState<Record<string, string>>({});
 
   async function load(silent = false) {
     if (!silent) setLoading(true);
@@ -33,6 +35,16 @@ export default function LastActivityPage() {
   useEffect(() => {
     load();
     const interval = setInterval(() => load(true), 60_000);
+    
+    // Fetch users for mapping email to Username
+    listUsers().then((users) => {
+      const map: Record<string, string> = {};
+      users.forEach((u) => {
+        map[u.Email] = u.Username;
+      });
+      setUsersMap(map);
+    }).catch(() => { /* ignore */ });
+    
     return () => clearInterval(interval);
   }, []);
 
@@ -126,7 +138,15 @@ export default function LastActivityPage() {
                           ''
                         )}
                       </td>
-                      <td className="text-xs text-muted">{String(tx['User'] || '-')}</td>
+                      <td className="text-xs text-muted">
+                        {usersMap[String(tx['User'])] ? (
+                          <span title={String(tx['User'])}>
+                            {usersMap[String(tx['User'])]}
+                          </span>
+                        ) : (
+                          String(tx['User'] || '-')
+                        )}
+                      </td>
                     </tr>
                   );
                 })}
