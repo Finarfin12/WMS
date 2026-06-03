@@ -174,9 +174,15 @@ export default function BuRegistryPage() {
                   <td>{b.default_uom}</td>
                   <td>
                     {b.is_active ? (
-                      <span className="badge badge-success"><CheckCircle size={14} /> Aktif</span>
+                      <span className="text-success flex items-center gap-1 font-semibold">
+                        <CheckCircle size={16} weight="fill" />
+                        Aktif
+                      </span>
                     ) : (
-                      <span className="badge badge-danger"><XCircle size={14} /> Inactive</span>
+                      <span className="text-muted flex items-center gap-1 font-semibold">
+                        <XCircle size={16} weight="fill" />
+                        Nonaktif
+                      </span>
                     )}
                   </td>
                   <td className="text-center">
