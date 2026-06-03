@@ -17,7 +17,7 @@ import {
 import { getProfitReport, getExportData, type ProfitReport } from '@/lib/reports';
 import { RadialLoading } from '@/lib/RadialLoading';
 import { alertError, toast, withLoading } from '@/lib/swal';
-import { formatCurrency, formatDateDmy } from '@/lib/utils';
+import { formatCurrency, formatCompactIDR, formatDateDmy } from '@/lib/utils';
 
 type GroupBy = 'product' | 'customer' | 'date';
 
@@ -324,7 +324,7 @@ export default function ReportsPage() {
           <div className={`grid ${report.has_hpp ? 'md:grid-cols-4' : 'md:grid-cols-2'} gap-4 mb-4`}>
             <div className="card">
               <p className="stat-label">Total Penjualan</p>
-              <p className="stat-value">{formatCurrency(report.summary.total_penjualan)}</p>
+              <p className="stat-value" title={new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(report.summary.total_penjualan)}>{formatCompactIDR(report.summary.total_penjualan)}</p>
             </div>
             <div className="card">
               <p className="stat-label">Total Qty Keluar</p>
@@ -336,14 +336,14 @@ export default function ReportsPage() {
               <>
                 <div className="card">
                   <p className="stat-label">Total HPP</p>
-                  <p className="stat-value text-danger">
-                    {formatCurrency(report.summary.total_hpp)}
+                  <p className="stat-value text-danger" title={new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(report.summary.total_hpp)}>
+                    {formatCompactIDR(report.summary.total_hpp)}
                   </p>
                 </div>
                 <div className="card">
-                  <p className="stat-label">Laba Kotor / Margin</p>
-                  <p className="stat-value text-success">
-                    {formatCurrency(report.summary.total_laba_kotor)}
+                  <p className="stat-label">Laba Kotor</p>
+                  <p className="stat-value text-success" title={new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(report.summary.total_laba_kotor)}>
+                    {formatCompactIDR(report.summary.total_laba_kotor)}
                   </p>
                   <p className="text-sm text-muted flex items-center gap-1 mt-1">
                     {report.summary.overall_margin_pct >= 0 ? (
@@ -400,14 +400,14 @@ export default function ReportsPage() {
                         <td className="font-semibold">{g.key}</td>
                         <td className="text-right">{g.qty.toLocaleString('id-ID')}</td>
                         <td className="text-xs text-muted">{g.uom || '-'}</td>
-                        <td className="text-right">{formatCurrency(g.penjualan)}</td>
+                        <td className="text-right" title={new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(g.penjualan)}>{formatCompactIDR(g.penjualan)}</td>
                         {report.has_hpp && (
                           <>
-                            <td className="text-right text-danger">
-                              {formatCurrency(g.hpp)}
+                            <td className="text-right text-danger" title={new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(g.hpp)}>
+                              {formatCompactIDR(g.hpp)}
                             </td>
-                            <td className="text-right text-success font-semibold">
-                              {formatCurrency(g.laba_kotor)}
+                            <td className="text-right text-success font-semibold" title={new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(g.laba_kotor)}>
+                              {formatCompactIDR(g.laba_kotor)}
                             </td>
                             <td className="text-right">
                               <span

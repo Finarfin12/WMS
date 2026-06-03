@@ -25,7 +25,7 @@ import {
 } from '@/lib/stock';
 import { RadialLoading } from '@/lib/RadialLoading';
 import { alertError, toast } from '@/lib/swal';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, formatCompactIDR } from '@/lib/utils';
 
 export default function StockRekapPage() {
   const [bu, setBu] = useState('');
@@ -181,16 +181,16 @@ export default function StockRekapPage() {
             </div>
             <div className="card">
               <p className="stat-label">Nilai Jual Sekarang</p>
-              <p className="stat-value">{formatCurrency(report.summary.total_value_now)}</p>
-              <p className="text-xs text-muted">
-                Awal: {formatCurrency(report.summary.total_value_initial)}
+              <p className="stat-value" title={new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(report.summary.total_value_now)}>{formatCompactIDR(report.summary.total_value_now)}</p>
+              <p className="text-xs text-muted" title={new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(report.summary.total_value_initial)}>
+                Awal: {formatCompactIDR(report.summary.total_value_initial)}
               </p>
             </div>
             {report.has_hpp && (
               <div className="card">
                 <p className="stat-label">Total HPP</p>
-                <p className="stat-value text-danger">
-                  {formatCurrency(report.summary.total_hpp_value || 0)}
+                <p className="stat-value text-danger" title={new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(report.summary.total_hpp_value || 0)}>
+                  {formatCompactIDR(report.summary.total_hpp_value || 0)}
                 </p>
               </div>
             )}
@@ -249,10 +249,10 @@ export default function StockRekapPage() {
                             g.uom || '-'
                           )}
                         </td>
-                        <td className="text-right">{formatCurrency(g.value_now)}</td>
+                        <td className="text-right" title={new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(g.value_now)}>{formatCompactIDR(g.value_now)}</td>
                         {report.has_hpp && (
-                          <td className="text-right text-danger">
-                            {formatCurrency(g.hpp_value)}
+                          <td className="text-right text-danger" title={new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(g.hpp_value)}>
+                            {formatCompactIDR(g.hpp_value)}
                           </td>
                         )}
                         <td className="text-right text-muted">{g.count}</td>
