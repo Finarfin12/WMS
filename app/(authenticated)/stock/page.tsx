@@ -11,7 +11,7 @@ import { MagnifyingGlass, Package, ArrowsClockwise, CaretDown, CaretRight } from
 import { getStock, type StockGetResult } from '@/lib/stock';
 import { RadialLoading } from '@/lib/RadialLoading';
 import { alertError, toast } from '@/lib/swal';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, formatCompactIDR } from '@/lib/utils';
 import { ContextMenu } from '@/components/ContextMenu';
 
 export default function StockPage() {
@@ -183,8 +183,8 @@ export default function StockPage() {
                             formatCurrency(item.harga_jual)
                           )}
                         </td>
-                        <td className="text-right font-semibold">
-                          {formatCurrency(item.stok * item.harga_jual)}
+                        <td className="text-right font-semibold" title={new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(item.stok * item.harga_jual)}>
+                          {formatCompactIDR(item.stok * item.harga_jual)}
                         </td>
                       </tr>
                       
@@ -204,8 +204,8 @@ export default function StockPage() {
                           <td className="text-right text-muted">
                             {formatCurrency(batch.harga)}
                           </td>
-                          <td className="text-right font-semibold text-muted">
-                            {formatCurrency(batch.stok * batch.harga)}
+                          <td className="text-right font-semibold text-muted" title={new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(batch.stok * batch.harga)}>
+                            {formatCompactIDR(batch.stok * batch.harga)}
                           </td>
                         </tr>
                       ))}

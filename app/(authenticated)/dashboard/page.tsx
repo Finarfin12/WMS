@@ -29,6 +29,20 @@ import { alertError } from '@/lib/swal';
 import { formatCurrency, formatCompactIDR, formatDateDmy } from '@/lib/utils';
 import { DashboardCharts } from '@/components/DashboardCharts';
 
+function StatBox({ icon, title, value, color }: { icon: React.ReactNode, title: string, value: string, color: 'success' | 'info' | 'danger' | 'primary' }) {
+  return (
+    <div className={`stat-box border-l-4 border-l-${color}`}>
+      <div className="flex justify-between items-start">
+        <div>
+          <p className="text-xs font-bold uppercase tracking-wider text-muted">{title}</p>
+          <p className="text-2xl font-extrabold mt-1 text-[var(--text-main)]">{value}</p>
+        </div>
+        <div className={`text-${color} bg-${color}/10 p-2 rounded-lg`}>{icon}</div>
+      </div>
+    </div>
+  );
+}
+
 export default function DashboardPage() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -255,7 +269,7 @@ export default function DashboardPage() {
                 <th>BU</th>
                 <th className="text-right">Items</th>
                 <th className="text-right">Stok</th>
-                <th className="text-right">Inventory Value</th>
+                <th className="text-right">Nilai</th>
                 <th className="text-right">Low Stock</th>
               </tr>
             </thead>
@@ -301,8 +315,8 @@ export default function DashboardPage() {
                         </div>
                       )}
                     </td>
-                    <td className="text-right font-semibold">
-                      {formatCurrency(bu.inventory_value)}
+                    <td className="text-right font-semibold" title={new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(bu.inventory_value)}>
+                      {formatCompactIDR(bu.inventory_value)}
                     </td>
                     <td className="text-right">
                       {bu.low_stock_count > 0 ? (
