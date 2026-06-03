@@ -632,6 +632,7 @@ export default function TransactionPage() {
                     <th className="text-right">Keluar</th>
                     <th>Customer</th>
                     <th>No SJ</th>
+                    <th>Keterangan</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -646,6 +647,7 @@ export default function TransactionPage() {
                       <td className="text-right text-danger">{(tx['Keluar'] as number) || ''}</td>
                       <td>{(tx['Customer/Supplier'] as string) || '-'}</td>
                       <td className="font-mono text-xs">{(tx['No SJ'] as string) || '-'}</td>
+                      <td className="text-xs text-muted max-w-[150px] truncate" title={tx['Keterangan'] as string}>{(tx['Keterangan'] as string) || '-'}</td>
                     </tr>
                   ))}
                 </tbody>
