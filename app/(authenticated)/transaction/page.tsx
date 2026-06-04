@@ -648,7 +648,7 @@ export default function TransactionPage() {
                     <th>Variasi</th>
                     <th className="text-right">Masuk</th>
                     <th className="text-right">Keluar</th>
-                    <th>Customer</th>
+                    <th>Customer/Supplier</th>
                     <th>No SJ</th>
                     <th>Keterangan</th>
                   </tr>

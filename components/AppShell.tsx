@@ -62,7 +62,7 @@ const MAIN_NAV_ITEMS: NavItem[] = [
   { href: '/reports', label: 'Laporan', icon: ChartLine },
   { href: '/import', label: 'Import', icon: Upload, adminOnly: true },
   { href: '/audit-log', label: 'Audit Log', icon: ClipboardText, adminOnly: true },
-  { href: '/users', label: 'Users', icon: UsersIcon, adminOnly: true },
+  { href: '/users', label: 'Users', icon: UsersIcon, superadminOnly: true },
 ];
 
 const BOTTOM_NAV_ITEMS: NavItem[] = [
