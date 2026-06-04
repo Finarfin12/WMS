@@ -434,6 +434,8 @@ export default function TransactionPage() {
         no_sj: '',
         keterangan: '',
       });
+      setTxModalType(null);
+      loadRecent();
     }
   }
 
@@ -706,8 +708,8 @@ export default function TransactionPage() {
             
             {txModalType === 'masuk' ? (
         // === BARANG MASUK TAB ===
-        <form onSubmit={handleSubmitMasuk} className="card max-w-3xl">
-          <h3 className="card-title">Form Barang Masuk</h3>
+        <form onSubmit={handleSubmitMasuk}>
+          <h3 className="text-xl font-bold text-primary mb-4">Form Barang Masuk</h3>
 
           <div className="grid md:grid-cols-2 gap-4">
             <div className="form-group">
