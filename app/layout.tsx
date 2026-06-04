@@ -6,12 +6,24 @@ const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
 export const viewport: Viewport = {
   themeColor: '#2563eb',
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 };
 
 export const metadata: Metadata = {
   title: 'WMS Gudang — KGM Group',
   description: 'Warehouse Management System untuk Atrione, Canvas, Chemical, dan unit bisnis lainnya.',
   manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'WMS Gudang',
+  },
+  icons: {
+    apple: '/icon-512.png',
+  },
 };
 
 export default function RootLayout({
