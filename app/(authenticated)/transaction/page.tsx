@@ -379,7 +379,8 @@ export default function TransactionPage() {
       return;
     }
 
-    const userEmail = JSON.parse(localStorage.getItem('wms_user') || '{}').email || 'unknown';
+    const userData = JSON.parse(localStorage.getItem('wms_user') || '{}');
+    const userEmail = userData.username || userData.email || 'unknown';
 
     const result = await withLoading(
       () =>
@@ -496,7 +497,8 @@ export default function TransactionPage() {
       return;
     }
 
-    const userEmail = JSON.parse(localStorage.getItem('wms_user') || '{}').email || 'unknown';
+    const userData = JSON.parse(localStorage.getItem('wms_user') || '{}');
+    const userEmail = userData.username || userData.email || 'unknown';
 
     // Build payload items
     const payloadItems = selectedItems.map(({ item, input }) => {
