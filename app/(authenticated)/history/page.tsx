@@ -477,10 +477,10 @@ export default function HistoryPage() {
           onClick={() => setRekapOpen(false)}
         >
           <div
-            className="bg-[var(--card-bg)] border border-[var(--border)] rounded-xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto"
+            className="bg-[var(--surface)] border border-[var(--border)] rounded-xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="p-5 border-b border-[var(--border)] flex items-center justify-between sticky top-0 bg-[var(--card-bg)]">
+            <div className="p-5 border-b border-[var(--border)] flex items-center justify-between sticky top-0 bg-[var(--surface)]">
               <h3 className="text-xl font-bold flex items-center gap-2">
                 <ChartBar size={22} weight="fill" className="text-primary" />
                 Rekap History — {bu}

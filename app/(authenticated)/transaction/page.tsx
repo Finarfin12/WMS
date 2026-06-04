@@ -74,7 +74,7 @@ export default function TransactionPage() {
 
   // === Outbound Form State (SJ Header + Stock Table) ===
   const [header, setHeader] = useState({
-    no_sj: `SJ-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-`,
+    no_sj: `SJ-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${String(Math.floor(Math.random() * 10000)).padStart(4, '0')}`,
     tanggal: new Date().toISOString().slice(0, 10),
     customer: '',
     no_po: '',
@@ -143,7 +143,7 @@ export default function TransactionPage() {
         keterangan: '',
       }));
       setHeader({
-        no_sj: `SJ-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-`,
+        no_sj: `SJ-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${String(Math.floor(Math.random() * 10000)).padStart(4, '0')}`,
         tanggal: new Date().toISOString().slice(0, 10),
         customer: '',
         no_po: '',
@@ -550,7 +550,7 @@ export default function TransactionPage() {
 
       // Reset
       setHeader({
-        no_sj: `SJ-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-`,
+        no_sj: `SJ-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${String(Math.floor(Math.random() * 10000)).padStart(4, '0')}`,
         tanggal: new Date().toISOString().slice(0, 10),
         customer: '',
         no_po: '',
