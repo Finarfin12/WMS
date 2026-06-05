@@ -21,9 +21,6 @@ export const metadata: Metadata = {
     statusBarStyle: 'default',
     title: 'WMS Gudang',
   },
-  icons: {
-    apple: '/icon-512.png',
-  },
 };
 
 export default function RootLayout({
