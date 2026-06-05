@@ -440,7 +440,7 @@ export default function TransactionPage() {
   }
 
   // Submit Outbound (Barang Keluar)
-  async function handleSubmitKeluar(e: React.FormEvent) {
+  async function handleSubmitKeluar(e?: React.FormEvent, skipPaktaCheck = false) {
     if (e) e.preventDefault();
     if (!bu || !buConfig) return;
 
@@ -494,7 +494,7 @@ export default function TransactionPage() {
 
     const totalQty = selectedItems.reduce((sum, { input }) => sum + (parseFloat(input.qty) || 0), 0);
 
-    if (totalQty >= 100 && !paktaConfirmed) {
+    if (totalQty >= 100 && !paktaConfirmed && !skipPaktaCheck) {
       setShowPakta(true);
       return;
     }
@@ -1255,7 +1255,7 @@ export default function TransactionPage() {
                   setPaktaConfirmed(true);
                   setShowPakta(false);
                   setTimeout(() => {
-                    handleSubmitKeluar(undefined as any);
+                    handleSubmitKeluar(undefined, true);
                   }, 100);
                 }}
               >
