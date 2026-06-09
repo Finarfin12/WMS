@@ -470,7 +470,7 @@ export default function MasterDataPage() {
                   <th>Nama</th>
                   <th>Variasi</th>
                   <th>UoM</th>
-                  <th className="text-right">Harga Jual</th>
+                  <th className="text-right">Harga Beli</th>
                   {flags?.has_hpp && <th className="text-right">HPP</th>}
                   <th className="text-right">Stok Awal</th>
                   <th className="text-center">Aksi</th>
@@ -730,7 +730,7 @@ export default function MasterDataPage() {
                       />
                     </div>
                     <div className="form-group">
-                      <label>Harga Jual</label>
+                      <label>Harga Beli</label>
                       <input
                         type="number"
                         className="form-control"

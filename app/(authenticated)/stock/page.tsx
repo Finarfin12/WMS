@@ -135,7 +135,7 @@ export default function StockPage() {
                   <th className="text-right">Stok Awal</th>
                   <th className="text-right">Masuk</th>
                   <th className="text-right">Keluar</th>
-                  <th className="text-right">Harga Jual</th>
+                  <th className="text-right">Harga Beli</th>
                   <th className="text-right">Nilai</th>
                 </tr>
               </thead>

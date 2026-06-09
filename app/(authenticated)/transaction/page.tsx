@@ -856,7 +856,7 @@ export default function TransactionPage() {
 
             {flags?.has_fifo && (
               <div className="form-group">
-                <label>Harga Jual / Batch Value</label>
+                <label>Harga Beli / Batch Value</label>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted">Rp</span>
                   <input
