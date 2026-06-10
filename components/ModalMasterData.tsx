@@ -33,7 +33,7 @@ export default function ModalMasterData({ isOpen, onClose, buName, defaultType, 
       const payload: any = {
         bu: buName,
         tipe: defaultType,
-        Nama: nama,
+        nama: nama,
       };
 
       if (isProduct) {

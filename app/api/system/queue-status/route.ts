@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
   // Auth — pakai INTERNAL_TOKEN supaya nggak bocor publik
   const token = req.headers.get('x-internal-token');
   const expected = process.env.APPS_SCRIPT_INTERNAL_TOKEN;
-  if (expected && token !== expected) {
+  if (!expected || token !== expected) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

@@ -13,10 +13,7 @@ export default function FlushQueueProvider({ children }: { children: React.React
       localStorage.setItem('wms_last_flush', String(now));
 
       const headers: Record<string, string> = {};
-      const secret = process.env.NEXT_PUBLIC_CRON_SECRET;
-      if (secret) {
-        headers['Authorization'] = `Bearer ${secret}`;
-      }
+      // Tidak perlu mengirim CRON_SECRET, backend akan memvalidasi session cookie secara otomatis
 
       fetch('/api/cron/flush-queue', { headers }).catch(() => {
         // silent fail — background task

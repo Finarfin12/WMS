@@ -100,8 +100,9 @@ export function FloatingWidget() {
     try {
       // Very basic safe eval replacing non-math characters
       const sanitized = calcInput.replace(/[^-()\d/*+.]/g, '');
-      // eslint-disable-next-line no-eval
-      const res = eval(sanitized);
+      // Mencegah eksploitasi eval() dengan menggunakan Function
+      const res = new Function('return ' + sanitized)();
+      if (!isFinite(res) || isNaN(res)) throw new Error('Invalid math');
       setCalcInput(String(res));
     } catch {
       setCalcInput('Error');

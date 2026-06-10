@@ -145,7 +145,9 @@ export function decodeJwtPayload(token: string): SessionPayload | null {
     const b64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
     const pad = b64.length % 4;
     const padded = pad ? b64 + '='.repeat(4 - pad) : b64;
-    const json = Buffer.from(padded, 'base64').toString('utf-8');
+    const json = typeof Buffer !== 'undefined'
+      ? Buffer.from(padded, 'base64').toString('utf-8')
+      : atob(padded);
     return JSON.parse(json) as SessionPayload;
   } catch {
     return null;

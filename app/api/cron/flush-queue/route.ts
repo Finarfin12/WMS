@@ -26,14 +26,26 @@ import {
 import { callAppsScript } from '@/lib/apps-script-client';
 import { recordSuccess, recordFailure } from '@/lib/circuit-breaker';
 import type { AppsScriptAction } from '@/lib/apps-script-client';
+import { jwtVerify } from 'jose';
 
 const MAX_ITEMS_PER_RUN = 50;
 const SERVICE_NAME = 'apps-script';
 
 export async function GET(req: NextRequest) {
-  // Auth check dilepas agar frontend (FlushQueueProvider) bisa memanggil secara berkala
-  // tanpa harus mengekspos rahasia cron ke browser.
-  // Jika antrian kosong, endpoint ini sangat ringan dan langsung kembali.
+  // Hanya ijinkan eksekusi jika user terautentikasi (mencegah public DoS)
+  const token = req.cookies.get('wms_session')?.value;
+  const secret = process.env.JWT_SECRET || process.env.SESSION_SECRET;
+  
+  if (!token || !secret) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  
+  try {
+    const encoded = new TextEncoder().encode(secret);
+    await jwtVerify(token, encoded, { algorithms: ['HS256'] });
+  } catch {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
 
   const startedAt = new Date().toISOString();
   const initial = await getQueueStats();
