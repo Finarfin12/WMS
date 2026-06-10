@@ -324,7 +324,7 @@ export default function MasterDataPage() {
             style={{ paddingLeft: '2.5rem' }}
           />
         </div>
-        <button type="button" onClick={load} className="btn btn-secondary" disabled={loading}>
+        <button type="button" onClick={() => load()} className="btn btn-secondary" disabled={loading}>
           <ArrowsClockwise size={16} className={loading ? 'animate-spin' : ''} />
           Refresh
         </button>

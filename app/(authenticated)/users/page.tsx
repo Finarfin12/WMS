@@ -169,7 +169,7 @@ export default function UsersPage() {
           />
           Tampilkan user nonaktif
         </label>
-        <button type="button" onClick={load} className="btn btn-secondary ml-auto" disabled={loading}>
+        <button type="button" onClick={() => load()} className="btn btn-secondary ml-auto" disabled={loading}>
           <ArrowsClockwise size={16} className={loading ? 'animate-spin' : ''} />
           Refresh
         </button>

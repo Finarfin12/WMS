@@ -86,7 +86,7 @@ export default function StockPage() {
             </p>
           )}
         </div>
-        <button type="button" onClick={load} className="btn btn-secondary" disabled={loading}>
+        <button type="button" onClick={() => load()} className="btn btn-secondary" disabled={loading}>
           <ArrowsClockwise size={18} weight="bold" className={loading ? 'animate-spin' : ''} />
           Refresh
         </button>
