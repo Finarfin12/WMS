@@ -151,8 +151,10 @@ export default function MasterDataPage() {
   // Load BU config
   useEffect(() => {
     if (!bu) return;
+    let isActive = true;
     listBus()
       .then((bus) => {
+        if (!isActive) return;
         const found = bus.find((b) => b.bu_name === bu);
         if (found) {
           setBuConfig(found);
@@ -160,24 +162,29 @@ export default function MasterDataPage() {
           setForm((f) => ({ ...f, tipe: defaultType, uom: found.default_uom || '' }));
         }
       })
-      .catch(alertError);
+      .catch((err) => {
+        if (isActive) alertError(err);
+      });
+    return () => { isActive = false; };
   }, [bu]);
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (isMounted = { current: true }) => {
     if (!bu) return;
     setLoading(true);
     try {
       const result = await listMasterData({ bu, search: search || undefined });
-      setItems(((result || []) as unknown) as MdRow[]);
+      if (isMounted.current) setItems(((result || []) as unknown) as MdRow[]);
     } catch (err) {
-      alertError(err);
+      if (isMounted.current) alertError(err);
     } finally {
-      setLoading(false);
+      if (isMounted.current) setLoading(false);
     }
   }, [bu, search]);
 
   useEffect(() => {
-    load();
+    const isMounted = { current: true };
+    load(isMounted);
+    return () => { isMounted.current = false; };
   }, [load]);
 
   function openNew() {

@@ -73,6 +73,9 @@ export type AppsScriptAction =
   // BU Logo (Phase 5b)
   | 'bu.uploadLogo'
   // System ops (Phase 5)
+  | 'system.getConfig'
+  | 'system.saveConfig'
+  | 'system.uploadLogo'
   | 'system.reconcile'
   | 'system.verifyIntegrity'
   | 'audit.list';

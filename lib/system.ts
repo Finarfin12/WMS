@@ -91,11 +91,11 @@ export async function getSystemConfig(): Promise<SystemConfig> {
   }
   
   // Fallback to AppsScript directly
-  return callAppsScript<SystemConfig, {}>('system.getConfig' as any, {});
+  return callAppsScript<SystemConfig, {}>('system.getConfig', {});
 }
 
 export async function saveSystemConfig(payload: { system_name: string }): Promise<{ ok: boolean }> {
-  return callAppsScript<{ ok: boolean }, { system_name: string }>('system.saveConfig' as any, payload);
+  return callAppsScript<{ ok: boolean }, { system_name: string }>('system.saveConfig', payload);
 }
 
 export interface UploadLogoPayload {
@@ -110,5 +110,5 @@ export interface UploadLogoResult {
 }
 
 export async function uploadSystemLogo(payload: UploadLogoPayload): Promise<UploadLogoResult> {
-  return callAppsScript<UploadLogoResult, UploadLogoPayload>('system.uploadLogo' as any, payload);
+  return callAppsScript<UploadLogoResult, UploadLogoPayload>('system.uploadLogo', payload);
 }

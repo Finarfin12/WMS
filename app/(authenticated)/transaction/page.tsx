@@ -36,6 +36,7 @@ interface OutboundRowInput {
 export default function TransactionPage() {
   const [bu, setBu] = useState('');
   const [txModalType, setTxModalType] = useState<'masuk' | 'keluar' | null>(null);
+  const [isSubmittingTx, setIsSubmittingTx] = useState(false);
   const [buConfig, setBuConfig] = useState<BUConfig | null>(null);
   const [recent, setRecent] = useState<HistoryItem[]>([]);
   const [loadingList, setLoadingList] = useState(false);
@@ -168,8 +169,11 @@ export default function TransactionPage() {
   // Load BU config + options
   useEffect(() => {
     if (!bu) return;
+    let isActive = true;
+
     listBus()
       .then(async (bus) => {
+        if (!isActive) return;
         const found = bus.find((b) => b.bu_name === bu);
         if (found) {
           setBuConfig(found);
@@ -230,27 +234,37 @@ export default function TransactionPage() {
           }
         }
       })
-      .catch((err) => alertError(err));
+      .catch((err) => {
+        if (isActive) alertError(err);
+      });
+
+    return () => {
+      isActive = false;
+    };
   }, [bu]);
 
   // Load stock list for outbound
-  const loadStock = useCallback(async () => {
+  const loadStock = useCallback(async (isMounted = { current: true }) => {
     if (!bu) return;
     setLoadingStock(true);
     try {
       const result = await getStock({ bu, include_zero: false });
-      setStockItems(result.items);
+      if (isMounted.current) setStockItems(result.items);
     } catch (err) {
-      alertError(err, 'Gagal memuat stok barang');
+      if (isMounted.current) alertError(err, 'Gagal memuat stok barang');
     } finally {
-      setLoadingStock(false);
+      if (isMounted.current) setLoadingStock(false);
     }
   }, [bu]);
 
   useEffect(() => {
+    const isMounted = { current: true };
     if (bu && txModalType === 'keluar') {
-      loadStock();
+      loadStock(isMounted);
     }
+    return () => {
+      isMounted.current = false;
+    };
   }, [bu, txModalType, loadStock]);
 
   // === UI-1: Cascading Atrione ===
@@ -379,7 +393,8 @@ export default function TransactionPage() {
       return;
     }
 
-    const userData = JSON.parse(localStorage.getItem('wms_user') || '{}');
+    let userData: any = {};
+    try { userData = JSON.parse(localStorage.getItem('wms_user') || '{}'); } catch {}
     const userEmail = userData.username || userData.email || 'unknown';
 
     const result = await withLoading(
@@ -442,7 +457,7 @@ export default function TransactionPage() {
   // Submit Outbound (Barang Keluar)
   async function handleSubmitKeluar(e?: React.FormEvent, skipPaktaCheck = false) {
     if (e) e.preventDefault();
-    if (!bu || !buConfig) return;
+    if (!bu || !buConfig || isSubmittingTx) return;
 
     if (!header.customer || !header.no_sj || !header.tanggal) {
       toast('Mohon lengkapi Data Surat Jalan (Customer, Nomor, Tanggal)', 'error');
@@ -499,7 +514,8 @@ export default function TransactionPage() {
       return;
     }
 
-    const userData = JSON.parse(localStorage.getItem('wms_user') || '{}');
+    let userData: any = {};
+    try { userData = JSON.parse(localStorage.getItem('wms_user') || '{}'); } catch {}
     const userEmail = userData.username || userData.email || 'unknown';
 
     // Build payload items
@@ -520,6 +536,7 @@ export default function TransactionPage() {
 
     const costVal = header.delivery_cost ? parseFloat(header.delivery_cost) : (header.delivery_costDisplay ? parseHargaID(header.delivery_costDisplay) : undefined);
 
+    setIsSubmittingTx(true);
     const result = await withLoading(
       () =>
         batchOutbound({
@@ -572,6 +589,7 @@ export default function TransactionPage() {
       setShowPakta(false);
       loadStock(); // reload stock checklist
     }
+    setIsSubmittingTx(false);
   }
 
   const flags = buConfig ? getBuFlags(buConfig) : null;
@@ -1250,7 +1268,7 @@ export default function TransactionPage() {
               <button
                 type="button"
                 className="btn btn-primary"
-                disabled={!paktaChecked}
+                disabled={!paktaChecked || isSubmittingTx}
                 onClick={() => {
                   setPaktaConfirmed(true);
                   setShowPakta(false);

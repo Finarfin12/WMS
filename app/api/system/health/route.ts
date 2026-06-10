@@ -37,7 +37,7 @@ export async function GET(
   const env_check = {
     apps_script_url: !!process.env.APPS_SCRIPT_WEB_APP_URL,
     apps_script_token: !!process.env.APPS_SCRIPT_INTERNAL_TOKEN,
-    jwt_secret: !!process.env.JWT_SECRET,
+    jwt_secret: !!(process.env.JWT_SECRET || process.env.SESSION_SECRET),
     vercel_kv: !!(
       process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN
     ),

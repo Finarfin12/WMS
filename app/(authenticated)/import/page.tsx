@@ -177,7 +177,8 @@ export default function ImportPage() {
     );
     if (!ok) return;
 
-    const userEmail = JSON.parse(localStorage.getItem('wms_user') || '{}').email || 'unknown';
+    let userEmail = 'unknown';
+    try { userEmail = JSON.parse(localStorage.getItem('wms_user') || '{}').email || 'unknown'; } catch {}
 
     const result = await withLoading(
       () => executeImport({ bu, type, rows, skip_invalid: true, user: userEmail }),

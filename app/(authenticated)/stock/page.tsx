@@ -46,7 +46,7 @@ export default function StockPage() {
     return () => window.removeEventListener('bu-changed', handler);
   }, []);
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (isMounted = { current: true }) => {
     if (!bu) return;
     setLoading(true);
     try {
@@ -56,16 +56,20 @@ export default function StockPage() {
         include_zero: includeZero,
         limit: 1000,
       });
-      setData(result);
+      if (isMounted.current) setData(result);
     } catch (err) {
-      alertError(err, 'Gagal memuat stok');
+      if (isMounted.current) alertError(err, 'Gagal memuat stok');
     } finally {
-      setLoading(false);
+      if (isMounted.current) setLoading(false);
     }
   }, [bu, search, includeZero]);
 
   useEffect(() => {
-    load();
+    const isMounted = { current: true };
+    load(isMounted);
+    return () => {
+      isMounted.current = false;
+    };
   }, [load]);
 
   return (

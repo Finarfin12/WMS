@@ -227,14 +227,16 @@ export default function BatchOutboundPage() {
     insufficientItems.length === 0 &&
     header.customer.trim() !== '' &&
     header.no_sj.trim() !== '' &&
-    items.every((it) => it.nama.trim() !== '' && parseFloat(it.qty) > 0);
+    items.every((it) => it.nama.trim() !== '' && parseFloat(it.qty) > 0 && (materialOptions.length === 0 || materialOptions.includes(it.nama)));
+
+  const invalidMaterials = items.filter((it) => it.nama.trim() !== '' && materialOptions.length > 0 && !materialOptions.includes(it.nama));
 
   // ==========================================================================
   // Submit
   // ==========================================================================
 
   async function handleSubmit() {
-    if (!canSubmit) return;
+    if (!canSubmit || submitting) return;
 
     // Cek pakta
     if (totalQty >= 100 && !paktaChecked) {
@@ -476,7 +478,12 @@ export default function BatchOutboundPage() {
                                 {materialOptions.map((m) => <option key={m} value={m}>{m}</option>)}
                               </select>
                             ) : (
-                              <input type="text" className="form-control text-sm py-1" value={it.nama} onChange={(e) => { updateItem(it.id, 'nama', e.target.value); }} list={isCanvas ? 'bo-lebar-options' : undefined} />
+                              <div className="relative">
+                                <input type="text" className={`form-control text-sm py-1 ${it.nama && materialOptions.length > 0 && !materialOptions.includes(it.nama) ? 'border-danger text-danger focus:border-danger focus:ring-danger' : ''}`} value={it.nama} onChange={(e) => { updateItem(it.id, 'nama', e.target.value); }} list="bo-material-options" />
+                                {it.nama && materialOptions.length > 0 && !materialOptions.includes(it.nama) && (
+                                  <span className="absolute -bottom-4 left-0 text-[10px] text-danger whitespace-nowrap">Material tidak ada di Master Data</span>
+                                )}
+                              </div>
                             )}
                           </td>
 
@@ -592,7 +599,12 @@ export default function BatchOutboundPage() {
                     </span>
                   )}
                 </div>
-                <div className="text-sm">
+                <div className="text-sm flex flex-col items-end gap-1">
+                  {invalidMaterials.length > 0 && (
+                    <span className="text-danger mr-4">
+                      {invalidMaterials.length} item material tidak valid
+                    </span>
+                  )}
                   {insufficientItems.length > 0 && (
                     <span className="text-danger mr-4">
                       {insufficientItems.length} item stok tidak cukup
@@ -622,6 +634,13 @@ export default function BatchOutboundPage() {
             </button>
           </div>
         </>
+      )}
+
+      {/* Datalist material (global, dipakai semua row non-Atrione) */}
+      {!isAtrione && materialOptions.length > 0 && (
+        <datalist id="bo-material-options">
+          {materialOptions.map((v) => <option key={v} value={v} />)}
+        </datalist>
       )}
 
       {/* Datalist lebar Canvas (global, dipakai semua row) */}

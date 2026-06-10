@@ -73,10 +73,7 @@ interface ListBusOptions {
  */
 export async function listBus(opts: ListBusOptions = {}): Promise<BUConfig[]> {
   const list = await callAppsScript<BUConfig[], ListBusOptions>('bu.list', opts);
-  return list.map(b => ({
-    ...b,
-    bu_name: b.bu_name?.replace(/[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu, '').trim() || b.bu_name,
-  }));
+  return list;
 }
 
 /**
