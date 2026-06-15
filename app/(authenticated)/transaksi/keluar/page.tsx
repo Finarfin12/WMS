@@ -13,7 +13,7 @@
  *   5. Kirim batchOutbound → handle resilient response
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Package,
   Plus,
@@ -92,6 +92,7 @@ export default function BatchOutboundPage() {
   const [showPakta, setShowPakta] = useState(false);
   const [paktaChecked, setPaktaChecked] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const isSubmittingRef = useRef(false);
 
   // === Options (cascading / datalist) ===
   const [materialOptions, setMaterialOptions] = useState<string[]>([]);
@@ -236,7 +237,7 @@ export default function BatchOutboundPage() {
   // ==========================================================================
 
   async function handleSubmit() {
-    if (!canSubmit || submitting) return;
+    if (!canSubmit || submitting || isSubmittingRef.current) return;
 
     // Cek pakta
     if (totalQty >= 100 && !paktaChecked) {
@@ -244,6 +245,7 @@ export default function BatchOutboundPage() {
       return;
     }
 
+    isSubmittingRef.current = true;
     setSubmitting(true);
     const payload: BatchOutboundPayload = {
       bu,
@@ -304,6 +306,7 @@ export default function BatchOutboundPage() {
       }
     } finally {
       setSubmitting(false);
+      isSubmittingRef.current = false;
     }
   }
 

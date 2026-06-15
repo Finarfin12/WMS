@@ -11,7 +11,7 @@
  *   - Outbound redesign: Checkbox-based current stock checklist per user preference
  */
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { Receipt, Plus, ArrowsClockwise, ArrowDown, ArrowUp, ListBullets, Warning, X } from '@phosphor-icons/react';
 import { saveTransaction, batchOutbound } from '@/lib/transaction';
 import { searchHistory, type HistoryItem } from '@/lib/history';
@@ -37,6 +37,7 @@ export default function TransactionPage() {
   const [bu, setBu] = useState('');
   const [txModalType, setTxModalType] = useState<'masuk' | 'keluar' | null>(null);
   const [isSubmittingTx, setIsSubmittingTx] = useState(false);
+  const isSubmittingTxRef = useRef(false);
   const [buConfig, setBuConfig] = useState<BUConfig | null>(null);
   const [recent, setRecent] = useState<HistoryItem[]>([]);
   const [loadingList, setLoadingList] = useState(false);
@@ -457,7 +458,7 @@ export default function TransactionPage() {
   // Submit Outbound (Barang Keluar)
   async function handleSubmitKeluar(e?: React.FormEvent, skipPaktaCheck = false) {
     if (e) e.preventDefault();
-    if (!bu || !buConfig || isSubmittingTx) return;
+    if (!bu || !buConfig || isSubmittingTx || isSubmittingTxRef.current) return;
 
     if (!header.customer || !header.no_sj || !header.tanggal) {
       toast('Mohon lengkapi Data Surat Jalan (Customer, Nomor, Tanggal)', 'error');
@@ -536,6 +537,7 @@ export default function TransactionPage() {
 
     const costVal = header.delivery_cost ? parseFloat(header.delivery_cost) : (header.delivery_costDisplay ? parseHargaID(header.delivery_costDisplay) : undefined);
 
+    isSubmittingTxRef.current = true;
     setIsSubmittingTx(true);
     const result = await withLoading(
       () =>
@@ -590,6 +592,7 @@ export default function TransactionPage() {
       loadStock(); // reload stock checklist
     }
     setIsSubmittingTx(false);
+    isSubmittingTxRef.current = false;
   }
 
   const flags = buConfig ? getBuFlags(buConfig) : null;
