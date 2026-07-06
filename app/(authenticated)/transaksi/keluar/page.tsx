@@ -56,10 +56,8 @@ interface ItemRow {
   stokLoading: boolean;
 }
 
-let _itemCounter = 0;
 function nextId(): string {
-  _itemCounter++;
-  return `item-${Date.now()}-${_itemCounter}`;
+  return `item-${Date.now()}-${crypto.randomUUID().slice(0, 8)}`;
 }
 
 // ============================================================================
@@ -91,6 +89,7 @@ export default function BatchOutboundPage() {
   // === UI states ===
   const [showPakta, setShowPakta] = useState(false);
   const [paktaChecked, setPaktaChecked] = useState(false);
+  const paktaConfirmedRef = useRef(false);
   const [submitting, setSubmitting] = useState(false);
   const isSubmittingRef = useRef(false);
 
@@ -239,8 +238,8 @@ export default function BatchOutboundPage() {
   async function handleSubmit() {
     if (!canSubmit || submitting || isSubmittingRef.current) return;
 
-    // Cek pakta
-    if (totalQty >= 100 && !paktaChecked) {
+    // Cek pakta — pakai ref supaya tidak kena stale closure
+    if (totalQty >= 100 && !paktaConfirmedRef.current) {
       setShowPakta(true);
       return;
     }
@@ -292,6 +291,7 @@ export default function BatchOutboundPage() {
           remarks: '',
         }));
         setPaktaChecked(false);
+        paktaConfirmedRef.current = false;
         setShowPakta(false);
       } else {
         toast(`Backend down — masuk antrian (id: ${result.queue_id}), akan ter-sync otomatis`, 'warning');
@@ -675,7 +675,7 @@ export default function BatchOutboundPage() {
               <input
                 type="checkbox"
                 checked={paktaChecked}
-                onChange={(e) => setPaktaChecked(e.target.checked)}
+                onChange={(e) => { setPaktaChecked(e.target.checked); paktaConfirmedRef.current = e.target.checked; }}
                 className="mt-0.5 w-4 h-4 accent-primary"
               />
               <span className="text-sm leading-relaxed">

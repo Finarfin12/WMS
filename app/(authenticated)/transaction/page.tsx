@@ -600,19 +600,7 @@ export default function TransactionPage() {
   const isCanvas = buConfig?.bu_id === 'canvas';
   const isChemical = buConfig?.bu_id === 'chemical';
 
-  // Group display stock rows for Chemical consolidated, normal for others
   let displayStockItems = stockItems;
-  if (isChemical) {
-    const grouped: Record<string, StockItem> = {};
-    stockItems.forEach((item) => {
-      if (!grouped[item.nama]) {
-        grouped[item.nama] = { ...item };
-      } else {
-        grouped[item.nama].stok += item.stok;
-      }
-    });
-    displayStockItems = Object.values(grouped);
-  }
 
   return (
     <div>
