@@ -39,6 +39,7 @@ Semua bug dari BUG_ANALYSIS.md diverifikasi terhadap kode aktual. Berikut status
 | - | `Transaction.gs:21-47` | `_getBuConfig_` tambah in-memory cache 30 detik. BU registry tidak dibaca dari Sheet tiap panggilan — reduksi O(n) reads per batch. | Performance |
 | - | `Transaction.gs:483-484` | `_buildFifoRows_` baca max 5000 baris MD — prevent timeout pada MD besar. | Performance |
 | 37 | `AuthOtp.gs:383-397` | Fix dead code OTP: baca OTP record existing, filter yang masih fresh, gabung dengan OTP baru, max 5 valid sekaligus. | Functionality |
+| - | `Stock.gs:21-34` | `_stockKey_` sekarang include `harga` untuk FIFO BU (Chemical). Tiap harga batch jadi entri stock terpisah dengan `harga_jual` akurat, bukan merged jadi satu entri. | Data Integrity |
 
 ---
 
