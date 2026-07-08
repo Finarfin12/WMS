@@ -413,7 +413,7 @@ export default function TransactionPage() {
           warna: form.warna || undefined,
           ukuran: form.ukuran || undefined,
           lebar: form.lebar || undefined,
-          harga: form.harga ? parseFloat(form.harga) : (form.hargaDisplay ? parseHargaID(form.hargaDisplay) : undefined),
+          harga: form.harga ? parseFloat(form.harga) : undefined,
           hpp: form.hpp ? parseFloat(form.hpp) : (form.hppDisplay ? parseHargaID(form.hppDisplay) : undefined),
           diskon: form.diskon ? parseFloat(form.diskon) : undefined,
           customer: form.customer || undefined,
@@ -880,24 +880,21 @@ export default function TransactionPage() {
               />
             </div>
 
-            {flags?.has_fifo && (
-              <div className="form-group">
-                <label>Harga Beli / Batch Value</label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted">Rp</span>
-                  <input
-                    type="number"
-                    className="form-control"
-                    value={form.harga}
-                    onChange={(e) => setForm({ ...form, harga: e.target.value })}
-                    required
-                    min="0"
-                    style={{ paddingLeft: '2.5rem' }}
-                    placeholder="Wajib untuk FIFO"
-                  />
-                </div>
+            <div className="form-group">
+              <label>Harga Beli</label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted">Rp</span>
+                <input
+                  type="number"
+                  className="form-control"
+                  value={form.harga}
+                  onChange={(e) => setForm({ ...form, harga: e.target.value })}
+                  min="0"
+                  style={{ paddingLeft: '2.5rem' }}
+                  placeholder="Harga beli per unit"
+                />
               </div>
-            )}
+            </div>
 
             <div className="form-group">
               <label className="flex justify-between items-center">
