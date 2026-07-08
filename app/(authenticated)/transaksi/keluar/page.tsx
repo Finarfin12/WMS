@@ -386,7 +386,7 @@ export default function BatchOutboundPage() {
                 <input type="text" className="form-control" value={header.no_sj} onChange={(e) => setHeader({ ...header, no_sj: e.target.value })} required />
               </div>
               <div className="form-group">
-                <label>Tanggal</label>
+                <label>Tanggal <span className="text-danger">*</span></label>
                 <input type="date" className="form-control" value={header.tanggal} onChange={(e) => setHeader({ ...header, tanggal: e.target.value })} required />
               </div>
               <div className="form-group">
@@ -394,11 +394,11 @@ export default function BatchOutboundPage() {
                 <input type="text" className="form-control" value={header.customer} onChange={(e) => setHeader({ ...header, customer: e.target.value })} placeholder="Nama customer/toko" required />
               </div>
               <div className="form-group">
-                <label>No PO</label>
+                <label>No PO <span className="text-muted">(opsional)</span></label>
                 <input type="text" className="form-control" value={header.no_po} onChange={(e) => setHeader({ ...header, no_po: e.target.value })} />
               </div>
               <div className="form-group md:col-span-2">
-                <label>Remarks</label>
+                <label>Remarks <span className="text-muted">(opsional)</span></label>
                 <input type="text" className="form-control" value={header.remarks} onChange={(e) => setHeader({ ...header, remarks: e.target.value })} />
               </div>
             </div>
@@ -409,23 +409,23 @@ export default function BatchOutboundPage() {
                 <h4 className="text-sm font-semibold mb-3 text-muted">Delivery Details</h4>
                 <div className="grid md:grid-cols-3 gap-4">
                   <div className="form-group">
-                    <label>Payment Method</label>
+                    <label>Payment Method <span className="text-muted">(opsional)</span></label>
                     <input type="text" className="form-control" value={header.payment_method} onChange={(e) => setHeader({ ...header, payment_method: e.target.value })} />
                   </div>
                   <div className="form-group">
-                    <label>Delivery Date</label>
+                    <label>Delivery Date <span className="text-muted">(opsional)</span></label>
                     <input type="date" className="form-control" value={header.delivery_date} onChange={(e) => setHeader({ ...header, delivery_date: e.target.value })} />
                   </div>
                   <div className="form-group">
-                    <label>Resi / AWB</label>
+                    <label>Resi / AWB <span className="text-muted">(opsional)</span></label>
                     <input type="text" className="form-control" value={header.resi} onChange={(e) => setHeader({ ...header, resi: e.target.value })} />
                   </div>
                   <div className="form-group">
-                    <label>Courier</label>
+                    <label>Courier <span className="text-muted">(opsional)</span></label>
                     <input type="text" className="form-control" value={header.courier} onChange={(e) => setHeader({ ...header, courier: e.target.value })} />
                   </div>
                   <div className="form-group">
-                    <label>Delivery Cost</label>
+                    <label>Delivery Cost <span className="text-muted">(opsional)</span></label>
                     <div className="relative">
                       <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted text-sm">Rp</span>
                       <input type="text" className="form-control" style={{ paddingLeft: '2.5rem' }} value={header.delivery_cost} onChange={(e) => setHeader({ ...header, delivery_cost: e.target.value })} onBlur={() => { const n = parseHargaID(header.delivery_cost); setHeader({ ...header, delivery_cost: formatHargaDisplay(n) }); }} placeholder="0" />

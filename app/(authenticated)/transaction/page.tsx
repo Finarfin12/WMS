@@ -739,7 +739,7 @@ export default function TransactionPage() {
 
           <div className="grid md:grid-cols-2 gap-4">
             <div className="form-group">
-              <label>Tanggal</label>
+              <label>Tanggal <span className="text-danger">*</span></label>
               <input
                 type="date"
                 className="form-control"
@@ -752,7 +752,7 @@ export default function TransactionPage() {
             {/* Nama Barang Dropdown dari Master Data */}
             <div className="form-group">
               <label className="flex justify-between items-center">
-                <span>Nama Barang</span>
+                <span>Nama Barang <span className="text-danger">*</span></span>
                 <button type="button" onClick={() => openModal(buConfig?.bu_id === 'atrione' ? 'Produk Baru' : 'Material Baru')} className="text-xs text-primary hover:underline">+ Tambah Baru</button>
               </label>
               {optionsLoading.material ? (
@@ -775,7 +775,7 @@ export default function TransactionPage() {
             {/* Ukuran Dropdown (Atrione) */}
             {flags?.has_size && (
               <div className="form-group">
-                <label>Ukuran</label>
+                <label>Ukuran <span className="text-muted">(opsional)</span></label>
                 {optionsLoading.ukuran ? (
                   <div className="form-control flex items-center"><RadialLoading size={16} /></div>
                 ) : ukuranOptions.length > 0 ? (
@@ -803,7 +803,7 @@ export default function TransactionPage() {
             {/* Warna Dropdown (Atrione cascading, other BUs normal dropdown) */}
             {flags?.has_color && (
               <div className="form-group">
-                <label>Warna</label>
+                <label>Warna <span className="text-muted">(opsional)</span></label>
                 {optionsLoading.warna ? (
                   <div className="form-control flex items-center"><RadialLoading size={16} /></div>
                 ) : warnaOptions.length > 0 ? (
@@ -831,7 +831,7 @@ export default function TransactionPage() {
             {/* Lebar Dropdown (Canvas) */}
             {flags?.has_width && (
               <div className="form-group">
-                <label>Lebar</label>
+                <label>Lebar <span className="text-muted">(opsional)</span></label>
                 {optionsLoading.lebar ? (
                   <div className="form-control flex items-center"><RadialLoading size={16} /></div>
                 ) : lebarOptions.length > 0 ? (
@@ -857,7 +857,7 @@ export default function TransactionPage() {
             )}
 
             <div className="form-group">
-              <label>UoM (Satuan)</label>
+              <label>UoM (Satuan) <span className="text-danger">*</span></label>
               <input
                 type="text"
                 className="form-control"
@@ -868,7 +868,7 @@ export default function TransactionPage() {
             </div>
 
             <div className="form-group">
-              <label>Quantity</label>
+              <label>Quantity <span className="text-danger">*</span></label>
               <input
                 type="number"
                 step="any"
@@ -881,7 +881,7 @@ export default function TransactionPage() {
             </div>
 
             <div className="form-group">
-              <label>Harga Beli</label>
+              <label>Harga Beli <span className="text-muted">(opsional)</span></label>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted">Rp</span>
                 <input
@@ -951,7 +951,7 @@ export default function TransactionPage() {
             <h3 className="card-title">Data Surat Jalan Keluar</h3>
             <div className="grid md:grid-cols-3 gap-4">
               <div className="form-group">
-                <label>Tanggal</label>
+                <label>Tanggal <span className="text-danger">*</span></label>
                 <input
                   type="date"
                   className="form-control"
@@ -962,7 +962,7 @@ export default function TransactionPage() {
               </div>
 
               <div className="form-group">
-                <label>No Surat Jalan</label>
+                <label>No Surat Jalan <span className="text-danger">*</span></label>
                 <input
                   type="text"
                   className="form-control font-mono"
@@ -974,7 +974,7 @@ export default function TransactionPage() {
 
               <div className="form-group">
                 <label className="flex justify-between items-center">
-                  <span>Customer</span>
+                  <span>Customer <span className="text-danger">*</span></span>
                   <button type="button" onClick={() => openModal('Customer Baru')} className="text-xs text-primary hover:underline">+ Tambah Baru</button>
                 </label>
                 {optionsLoading.customers ? (
@@ -995,7 +995,7 @@ export default function TransactionPage() {
               </div>
 
               <div className="form-group">
-                <label>No PO</label>
+                <label>No PO <span className="text-muted">(opsional)</span></label>
                 <input
                   type="text"
                   className="form-control"
@@ -1005,7 +1005,7 @@ export default function TransactionPage() {
               </div>
 
               <div className="form-group md:col-span-2">
-                <label>Catatan / Remarks</label>
+                <label>Catatan / Remarks <span className="text-muted">(opsional)</span></label>
                 <input
                   type="text"
                   className="form-control"
@@ -1042,7 +1042,7 @@ export default function TransactionPage() {
                     )}
                   </div>
                   <div className="form-group">
-                    <label>Tanggal Pengiriman</label>
+                      <label>Tanggal Pengiriman <span className="text-muted">(opsional)</span></label>
                     <input
                       type="date"
                       className="form-control"

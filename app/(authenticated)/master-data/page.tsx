@@ -637,7 +637,7 @@ export default function MasterDataPage() {
             <form onSubmit={handleSubmit}>
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="form-group">
-                  <label>Tipe</label>
+                  <label>Tipe <span className="text-muted">(opsional)</span></label>
                   <select
                     className="form-control"
                     value={form.tipe}
@@ -658,7 +658,7 @@ export default function MasterDataPage() {
                   </select>
                 </div>
                 <div className="form-group">
-                  <label>Tanggal</label>
+                  <label>Tanggal <span className="text-muted">(opsional)</span></label>
                   <input
                     type="date"
                     className="form-control"
@@ -667,7 +667,7 @@ export default function MasterDataPage() {
                   />
                 </div>
                 <div className="form-group md:col-span-2">
-                  <label>{(form.tipe === 'Customer Baru' || form.tipe === 'Payment Method') ? 'Nama' : 'Nama Barang'}</label>
+                  <label>{(form.tipe === 'Customer Baru' || form.tipe === 'Payment Method') ? 'Nama' : 'Nama Barang'} <span className="text-danger">*</span></label>
                   <input
                     type="text"
                     className="form-control"
@@ -679,7 +679,7 @@ export default function MasterDataPage() {
 
                 {form.tipe === 'Customer Baru' && (
                   <div className="form-group md:col-span-2">
-                    <label>Alamat (Dicetak di Surat Jalan)</label>
+                    <label>Alamat (Dicetak di Surat Jalan) <span className="text-muted">(opsional)</span></label>
                     <textarea
                       className="form-control"
                       rows={3}
@@ -695,7 +695,7 @@ export default function MasterDataPage() {
                   <>
                     {flags?.has_color && (
                       <div className="form-group">
-                        <label>Warna</label>
+                        <label>Warna <span className="text-muted">(opsional)</span></label>
                         <input
                           type="text"
                           className="form-control"
@@ -706,7 +706,7 @@ export default function MasterDataPage() {
                     )}
                     {flags?.has_size && (
                       <div className="form-group">
-                        <label>Ukuran</label>
+                        <label>Ukuran <span className="text-muted">(opsional)</span></label>
                         <input
                           type="text"
                           className="form-control"
@@ -717,7 +717,7 @@ export default function MasterDataPage() {
                     )}
                     {flags?.has_width && (
                       <div className="form-group">
-                        <label>Lebar</label>
+                        <label>Lebar <span className="text-muted">(opsional)</span></label>
                         <input
                           type="text"
                           className="form-control"
@@ -727,7 +727,7 @@ export default function MasterDataPage() {
                       </div>
                     )}
                     <div className="form-group">
-                      <label>UoM</label>
+                      <label>UoM <span className="text-danger">*</span></label>
                       <input
                         type="text"
                         className="form-control"
@@ -737,7 +737,7 @@ export default function MasterDataPage() {
                       />
                     </div>
                     <div className="form-group">
-                      <label>Harga Beli</label>
+                      <label>Harga Beli <span className="text-muted">(opsional)</span></label>
                       <input
                         type="number"
                         className="form-control"
@@ -747,7 +747,7 @@ export default function MasterDataPage() {
                     </div>
                     {flags?.has_hpp && (
                       <div className="form-group">
-                        <label>HPP</label>
+                        <label>HPP <span className="text-muted">(opsional)</span></label>
                         <input
                           type="number"
                           className="form-control"
@@ -757,7 +757,7 @@ export default function MasterDataPage() {
                       </div>
                     )}
                     <div className="form-group">
-                      <label>Satuan Harga</label>
+                      <label>Satuan Harga <span className="text-muted">(opsional)</span></label>
                       <select
                         className="form-control"
                         value={form.satuan_harga}
@@ -768,7 +768,7 @@ export default function MasterDataPage() {
                       </select>
                     </div>
                     <div className="form-group">
-                      <label>Stok Awal</label>
+                      <label>Stok Awal <span className="text-muted">(opsional)</span></label>
                       <input
                         type="number"
                         className="form-control"
