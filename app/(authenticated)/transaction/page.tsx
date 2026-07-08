@@ -605,7 +605,19 @@ export default function TransactionPage() {
   const isCanvas = buConfig?.bu_id === 'canvas';
   const isChemical = buConfig?.bu_id === 'chemical';
 
+  // Group FIFO items by nama untuk chemical (batch expand di stock page, tapi di sini satu baris per item)
   let displayStockItems = stockItems;
+  if (isChemical) {
+    const grouped: Record<string, (typeof stockItems)[0]> = {};
+    stockItems.forEach((item) => {
+      if (!grouped[item.nama]) {
+        grouped[item.nama] = { ...item };
+      } else {
+        grouped[item.nama].stok += item.stok;
+      }
+    });
+    displayStockItems = Object.values(grouped);
+  }
 
   return (
     <div>
