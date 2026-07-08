@@ -246,8 +246,12 @@ export default function BatchOutboundPage() {
 
     isSubmittingRef.current = true;
     setSubmitting(true);
+    let userData: any = {};
+    try { userData = JSON.parse(localStorage.getItem('wms_user') || '{}'); } catch {}
+    const userEmail = userData.username || userData.email || 'unknown';
     const payload: BatchOutboundPayload = {
       bu,
+      user: userEmail,
       no_sj: header.no_sj,
       tanggal: header.tanggal,
       customer: header.customer,

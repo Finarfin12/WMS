@@ -24,6 +24,16 @@ export default function StockPage() {
   
   const [expandedKeys, setExpandedKeys] = useState<Set<number>>(new Set());
 
+  // items already one row per item by backend (batches[] tracks individual prices)
+  const rows = data?.items ?? [];
+
+  useEffect(() => {
+    setExpandedKeys(new Set(rows.reduce<number[]>((acc, it, i) => {
+      if (it.batches && it.batches.length > 0) acc.push(i);
+      return acc;
+    }, [])));
+  }, [rows]);
+
   function toggleExpand(idx: number) {
     setExpandedKeys((prev) => {
       const next = new Set(prev);
@@ -82,7 +92,7 @@ export default function StockPage() {
           </h1>
           {data && (
             <p className="text-sm text-muted">
-              {data.total_items} item · Total stok: {data.total_stock.toLocaleString('id-ID')}
+              {rows.length} item · Total stok: {data.total_stock.toLocaleString('id-ID')}
             </p>
           )}
         </div>
@@ -124,7 +134,7 @@ export default function StockPage() {
           <div className="flex items-center justify-center py-12">
             <RadialLoading size={60} />
           </div>
-        ) : !data || data.items.length === 0 ? (
+        ) : !data || rows.length === 0 ? (
           <p className="text-center text-muted py-12">Tidak ada data stok</p>
         ) : (
           <div className="overflow-x-auto">
@@ -144,8 +154,8 @@ export default function StockPage() {
                 </tr>
               </thead>
               <tbody>
-                {data.items.map((item, i) => {
-                  const hasBatches = item.batches && item.batches.length > 1;
+                {rows.map((item, i) => {
+                  const hasBatches = item.batches && item.batches.length > 0;
                   const isOpen = expandedKeys.has(i);
                   
                   return (
@@ -179,16 +189,16 @@ export default function StockPage() {
                         <td className="text-right text-success">+{item.total_masuk}</td>
                         <td className="text-right text-danger">-{item.total_keluar}</td>
                         <td className="text-right">
-                          {hasBatches ? (
+                          {item.batches && item.batches.length > 1 ? (
                             <span className="text-warning font-semibold text-sm px-2 py-1 rounded bg-warning/10" title="Multi-batch dengan harga berbeda">
-                              {item.batches!.length} Batch
+                              {item.batches.length} Batch
                             </span>
                           ) : (
                             formatCurrency(item.harga_jual)
                           )}
                         </td>
-                        <td className="text-right font-semibold" title={new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(item.stok * item.harga_jual)}>
-                          {formatCompactIDR(item.stok * item.harga_jual)}
+                        <td className="text-right font-semibold" title={new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(item.batches ? item.batches.reduce((v, b) => v + (b.stok || 0) * (b.harga || 0), 0) : item.stok * item.harga_jual)}>
+                          {formatCompactIDR(item.batches ? item.batches.reduce((v, b) => v + (b.stok || 0) * (b.harga || 0), 0) : item.stok * item.harga_jual)}
                         </td>
                       </tr>
                       

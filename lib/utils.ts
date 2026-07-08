@@ -122,8 +122,18 @@ export function parseHargaID(input: string): number {
       // Ribuan: "15000" atau "1,500" -> hapus koma
       s = s.replace(/,/g, '');
     }
+  } else if (hasDot && !hasComma) {
+    // Hanya titik — bisa ribuan ("50.000") atau desimal ("50.50")
+    const parts = s.split('.');
+    const last = parts.pop() || '';
+    if (parts.length > 1 || last.length !== 2) {
+      // "1.000.000" atau "50.000" → titik = thousand separator
+      s = s.replace(/\./g, '');
+    } else {
+      // "50.50" → titik desimal, biarkan
+      s = parts.join('') + '.' + last;
+    }
   }
-  // hasDot only — "50.50" atau "1.500.00" → parse langsung
 
   const n = parseFloat(s);
   return isNaN(n) ? 0 : n;

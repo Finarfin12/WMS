@@ -387,6 +387,7 @@ export default function TransactionPage() {
       toast('Nama dan Quantity wajib diisi', 'error');
       return;
     }
+    if (isSubmittingTx || isSubmittingTxRef.current) return;
 
     const qty = parseFloat(form.qty);
     if (qty <= 0) {
@@ -398,6 +399,8 @@ export default function TransactionPage() {
     try { userData = JSON.parse(localStorage.getItem('wms_user') || '{}'); } catch {}
     const userEmail = userData.username || userData.email || 'unknown';
 
+    setIsSubmittingTx(true);
+    isSubmittingTxRef.current = true;
     const result = await withLoading(
       () =>
         saveTransaction({
@@ -453,6 +456,8 @@ export default function TransactionPage() {
       setTxModalType(null);
       loadRecent();
     }
+    setIsSubmittingTx(false);
+    isSubmittingTxRef.current = false;
   }
 
   // Submit Outbound (Barang Keluar)
@@ -1263,9 +1268,7 @@ export default function TransactionPage() {
                 onClick={() => {
                   setPaktaConfirmed(true);
                   setShowPakta(false);
-                  setTimeout(() => {
-                    handleSubmitKeluar(undefined, true);
-                  }, 100);
+                  handleSubmitKeluar(undefined, true);
                 }}
               >
                 Ya, Simpan
